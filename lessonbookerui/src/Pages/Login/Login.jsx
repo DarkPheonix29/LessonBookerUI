@@ -3,6 +3,8 @@ import { signInWithPopup, GoogleAuthProvider, getAuth, signInWithEmailAndPasswor
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../../firebase"; // Ensure Firebase is initialized
+import Header from "../../Components/Header/Header";
+import "./Login.css";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -36,28 +38,38 @@ const Login = () => {
     };
 
     return (
-        <div className="login-container">
-            <h2>Login</h2>
-            {error && <p className="error">{error}</p>}
-            <form onSubmit={handleLogin}>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                <button type="submit">Login</button>
-            </form>
-            <button onClick={handleGoogleLogin}>Sign in with Google</button>
-        </div>
+        <>
+            <Header />
+            <div className="loginContainer">
+                <form onSubmit={handleLogin} className="loginForm">
+                    <div className="inputGroup">
+                        <label htmlFor="email">Email:</label>
+                        <input
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="inputGroup">
+                        <label htmlFor="password">Password:</label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    {error && <p className="error">{error}</p>}
+                    <button type="submit" className="loginButton">Login</button>
+                </form>
+                <p className="registerLink">
+                    Don't have an account? <a href="/signup">Sign up</a>
+                </p>
+            </div>
+        </>
     );
 };
 
