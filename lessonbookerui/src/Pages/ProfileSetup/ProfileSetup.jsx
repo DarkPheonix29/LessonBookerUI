@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const ProfileSetup = () => {
     const [profile, setProfile] = useState({
@@ -10,11 +10,11 @@ const ProfileSetup = () => {
         pickupAddress: '',
         dateOfBirth: '',
     });
+
     const { email } = useParams();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch the email to pre-fill any necessary fields if required
         setProfile((prev) => ({ ...prev, email }));
     }, [email]);
 
@@ -27,12 +27,10 @@ const ProfileSetup = () => {
         e.preventDefault();
 
         try {
-            // Send profile data to backend for storage
             const response = await axios.post('/api/profile', profile);
 
             if (response.status === 201) {
-                // If profile is created successfully, redirect to a confirmation or dashboard page
-                history.push('/dashboard');
+                navigate('/studentdashboard'); // Redirect to dashboard after profile setup
             }
         } catch (error) {
             console.error('Error while creating profile:', error);
