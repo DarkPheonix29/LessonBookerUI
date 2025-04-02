@@ -1,0 +1,17 @@
+/* Header and logo styles */
+.header {
+    background-color: #305279;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.logo {
+    max-width: 100%;
+    height: auto;
+}
