@@ -1,0 +1,73 @@
+/* Home Page Styles */
+.homeContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f4f4f4;
+    min-height: auto;
+    padding: 20px;
+}
+
+.homeContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    padding: 40px;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 225px;
+    text-align: center;
+}
+
+    .homeContent h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: black; /* Set the color of the entire h2 text to black */
+    }
+
+.lessonBookerText {
+    display: block; /* This forces "LessonBooker" onto a new line */
+    color: #6ce5ff; /* Set the color of "LessonBooker" to blue */
+    margin-top: 10px; /* Optional: Adds space between the lines */
+}
+
+.homeContent p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.homeLoginButton {
+    font-size: 18px;
+    background-color: #6ce5ff;
+    color: #fff;
+    border: 2px solid #6ce5ff;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    border-radius: 5px;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 250px;
+}
+
+    .homeLoginButton:hover {
+        background-color: #3db8ff;
+        color: #fff;
+    }
+
+/* Responsive */
+@media (max-width: 991px) {
+    .homeContent {
+        padding: 20px;
+    }
+
+    .homeLoginButton {
+        font-size: 16px;
+        padding: 8px 16px;
+    }
+}
