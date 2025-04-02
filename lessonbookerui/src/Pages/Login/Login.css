@@ -7,34 +7,34 @@ body {
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    background-color: #f8f9fa;
+    background-color: #e0e0e0; /* Set background color to gray */
 }
 
+/* Centered Box */
 .loginContainer {
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: 100%;
-    max-width: 400px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    margin-top: 100px; /* Push down below fixed header */
+    height: 100vh;
 }
 
-    .loginForm {
+/* Login Box */
+.loginBox {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start; /* Align content naturally */
     width: 100%;
-    padding: 20px;
+    max-width: 500px; /* Make it broader */
+    padding: 30px;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 100px; /* Moves the box down from header */
+    color: black; /* Ensures all text inside is black */
 }
 
+/* Input Groups */
 .inputGroup {
     display: flex;
     flex-direction: column;
@@ -42,33 +42,35 @@ body {
     margin-bottom: 16px;
 }
 
-.inputGroup label {
-    color: black;
-    font-size: 14px;
-    margin-bottom: 5px;
-}
+    .inputGroup label {
+        color: black;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
 
-.inputGroup input {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-top: 5px;
-    color: black;
-    background-color: #fff;
-}
+    .inputGroup input {
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-top: 5px;
+        color: black;
+        background-color: #fff;
+    }
 
-.inputGroup input:focus {
-    outline: none;
-    border-color: #6ce5ff;
-}
+        .inputGroup input:focus {
+            outline: none;
+            border-color: #6ce5ff;
+        }
 
+/* Error Message */
 .error {
     color: red;
     font-size: 14px;
     margin-top: 10px;
 }
 
+/* Login Button */
 .loginButton {
     color: #6ce5ff;
     font-size: 18px;
@@ -83,26 +85,33 @@ body {
     border-radius: 5px;
 }
 
-.loginButton:hover {
-    background-color: #6ce5ff;
-    color: #fff;
-}
+    .loginButton:hover {
+        background-color: #6ce5ff;
+        color: #fff;
+    }
 
+/* Signup Link */
 .registerLink {
-    margin-top: 20px;
+    margin-top: 15px;
     font-size: 16px;
 }
 
-.registerLink a {
-    color: #6ce5ff;
-    text-decoration: none;
-}
+    .registerLink a {
+        color: #6ce5ff; /* Matches button color */
+        text-decoration: none;
+    }
 
-.registerLink a:hover {
-    text-decoration: underline;
-}
+        .registerLink a:hover {
+            text-decoration: underline;
+        }
 
+/* Responsive */
 @media (max-width: 991px) {
+    .loginBox {
+        max-width: 90%; /* Adjust for smaller screens */
+        padding: 20px;
+    }
+
     .loginButton {
         font-size: 16px;
         padding: 8px 16px;

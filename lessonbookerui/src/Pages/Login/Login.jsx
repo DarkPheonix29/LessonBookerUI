@@ -25,23 +25,11 @@ const Login = () => {
         }
     };
 
-    const handleGoogleLogin = async () => {
-        try {
-            const provider = new GoogleAuthProvider();
-            const result = await signInWithPopup(auth, provider);
-            const idToken = await result.user.getIdToken();
-            await axios.post("/api/account/login", { idToken });
-            navigate("/dashboard");
-        } catch (err) {
-            setError("Failed to sign in with Google.");
-        }
-    };
-
     return (
         <>
             <Header />
             <div className="loginContainer">
-                <form onSubmit={handleLogin} className="loginForm">
+                <form onSubmit={handleLogin} className="loginBox">
                     <div className="inputGroup">
                         <label htmlFor="email">Email:</label>
                         <input
@@ -64,10 +52,10 @@ const Login = () => {
                     </div>
                     {error && <p className="error">{error}</p>}
                     <button type="submit" className="loginButton">Login</button>
+                    <p className="registerLink">
+                        Don't have an account? <a href="/signup">Sign up</a>
+                    </p>
                 </form>
-                <p className="registerLink">
-                    Don't have an account? <a href="/signup">Sign up</a>
-                </p>
             </div>
         </>
     );
