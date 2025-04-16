@@ -1,6 +1,7 @@
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import Header from "../../Components/Header/Header";
+import Calendar from "../../Components/Calendar/Calendar"; // Import the calendar component
 
 const StudentDashboard = () => {
     const auth = getAuth();
@@ -31,10 +32,8 @@ const StudentDashboard = () => {
                 </section>
 
                 <div className="w-full max-w-[932px] h-[225px] border border-gray-300 mt-4 relative">
-                    {/* Calendar placeholder */}
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">
-                        Calendar will appear here.
-                    </div>
+                    {/* Calendar component embedded */}
+                    <Calendar isInstructor={false} viewMode="dashboard" />
                 </div>
             </main>
         </div>
