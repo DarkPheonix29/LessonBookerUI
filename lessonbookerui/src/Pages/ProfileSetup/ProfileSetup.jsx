@@ -1,4 +1,3 @@
-// ProfileSetup.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -39,7 +38,7 @@ const ProfileSetup = () => {
 
     return (
         <>
-            <Header />
+            <Header variant="login" />
             <div className="profileSetupContainer">
                 <form onSubmit={handleSubmit} className="profileSetupBox">
                     <div className="inputGroup">

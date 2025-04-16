@@ -1,9 +1,10 @@
-/* Header and logo styles */
+/* Shared styles */
 .header {
     background-color: #305279;
     width: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
     padding: 10px 0;
     position: fixed;
     top: 0;
@@ -12,6 +13,53 @@
 }
 
 .logo {
+    aspect-ratio: 3.17;
+    object-fit: contain;
+    object-position: center;
+    width: 187.5px;
     max-width: 100%;
-    height: auto;
 }
+
+/* Dashboard-specific header adjustments */
+.dashboard-header {
+    justify-content: space-between;
+    padding: 7.5px 20px;
+}
+
+.userMenu {
+    display: flex;
+    align-items: center;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    gap: 12px;
+    max-width: 250px;
+    overflow: hidden;
+    padding-right: 25px;
+}
+
+.userEmail {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+}
+
+
+.logoutButton {
+    background: linear-gradient(90deg, #ff7f50, #ff4500);
+    color: #ffffff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+    .logoutButton:hover {
+        background: linear-gradient(90deg, #ff6347, #ff0000);
+        transform: scale(1.05);
+    }

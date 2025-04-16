@@ -25,7 +25,7 @@ const Signup = () => {
 
     return (
         <>
-            <Header />
+            <Header variant="login" />
             <div className="signupContainer">
                 <form onSubmit={handleSubmit} className="signupBox">
                     <div className="inputGroup">

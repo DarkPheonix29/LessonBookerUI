@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { signInWithPopup, GoogleAuthProvider, getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import {
+    signInWithPopup,
+    GoogleAuthProvider,
+    getAuth,
+    signInWithEmailAndPassword,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../../firebase"; // Ensure Firebase is initialized
@@ -19,7 +24,7 @@ const Login = () => {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const idToken = await userCredential.user.getIdToken();
             await axios.post("/api/account/login", { idToken });
-            navigate("/dashboard"); // Adjust based on role
+            navigate("/studentdashboard"); // Adjust based on role
         } catch (err) {
             setError("Failed to log in. Please check your credentials.");
         }
@@ -27,7 +32,7 @@ const Login = () => {
 
     return (
         <>
-            <Header />
+            <Header variant="login" />
             <div className="loginContainer">
                 <form onSubmit={handleLogin} className="loginBox">
                     <div className="inputGroup">
