@@ -27,7 +27,15 @@ const ProfileSetup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('/api/profile', profile);
+            // Format date to include time
+            const formattedProfile = {
+                ...profile,
+                dateOfBirth: profile.dateOfBirth
+                    ? `${profile.dateOfBirth}T00:00:00`
+                    : ''
+            };
+
+            const response = await axios.post('/api/profile', formattedProfile);
             if (response.status === 201) {
                 navigate('/studentdashboard');
             }

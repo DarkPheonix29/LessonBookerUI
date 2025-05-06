@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-    signInWithPopup,
-    GoogleAuthProvider,
-    getAuth,
-    signInWithEmailAndPassword,
-} from "firebase/auth";
+import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../../firebase"; // Ensure Firebase is initialized
@@ -21,10 +16,33 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
+            // Step 1: Sign in with Firebase
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const idToken = await userCredential.user.getIdToken();
-            await axios.post("/api/account/login", { idToken });
-            navigate("/studentdashboard"); // Adjust based on role
+            const idToken = await userCredential.user.getIdToken(); // Get ID token
+
+            // Step 2: Send ID token to backend for verification and role retrieval
+            const response = await axios.post("/api/account/login", { idToken });
+
+            // Step 3: Handle the backend response and navigate
+            if (response.data && response.data.role) {
+                const role = response.data.role;
+                switch (role) {
+                    case "admin":
+                        navigate("/adminpanel");
+                        break;
+                    case "student":
+                        navigate("/studentdashboard");
+                        break;
+                    case "instructor":
+                        navigate("/instructordashboard");
+                        break;
+                    default:
+                        setError("Role not assigned. Please contact support.");
+                        break;
+                }
+            } else {
+                setError("Failed to log in. Please check your credentials.");
+            }
         } catch (err) {
             setError("Failed to log in. Please check your credentials.");
         }

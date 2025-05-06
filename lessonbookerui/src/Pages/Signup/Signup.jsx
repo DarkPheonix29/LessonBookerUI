@@ -14,7 +14,13 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('/api/account/signup', { email, password });
+            // Now including registrationKey in the payload
+            const response = await axios.post('/api/Account/signup', {
+                email,
+                password,
+                registrationKey
+            });
+
             if (response.status === 200) {
                 navigate(`/profilesetup/${email}`);
             }
@@ -22,6 +28,7 @@ const Signup = () => {
             setErrorMessage(error.response?.data?.message || 'Signup failed. Please try again.');
         }
     };
+
 
     return (
         <>

@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../Components/Header/Header";
 import Calendar from "../../Components/Calendar/Calendar"; // Import the Calendar component
 
-const StudentCalendar = () => {
+const InstructorCalendar = () => {
     const auth = getAuth();
     const navigate = useNavigate();
     const user = auth.currentUser;
-    const userEmail = user?.email || "Student";
+    const userEmail = user?.email || "Instructor";
 
     const handleLogout = async () => {
         await signOut(auth);
@@ -28,11 +28,11 @@ const StudentCalendar = () => {
 
                 {/* Full calendar component view */}
                 <div className="w-full max-w-[932px] h-[auto] mt-4">
-                    <Calendar isInstructor={false} viewMode="full" />
+                    <Calendar isInstructor={true} viewMode="full" />
                 </div>
             </main>
         </div>
     );
 };
 
-export default StudentCalendar;
+export default InstructorCalendar;
