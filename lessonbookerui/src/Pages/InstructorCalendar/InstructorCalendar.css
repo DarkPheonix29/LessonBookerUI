@@ -1,0 +1,11 @@
+.instructor-calendar-root {
+    color: #111;
+}
+
+    .instructor-calendar-root .text-[#6ce5ff] {
+        color: #6ce5ff !important;
+    }
+
+    .instructor-calendar-root .text-blue-600 {
+        color: #2563eb !important;
+    }

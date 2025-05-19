@@ -1,37 +1,62 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { getAuth, signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import "./AdminPanel.css";
 
 const AdminPanel = () => {
     const [students, setStudents] = useState([]);
+    const [bookings, setBookings] = useState([]);
     const [newKey, setNewKey] = useState("");
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [profileData, setProfileData] = useState({});
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
+    const [activeTab, setActiveTab] = useState("students");
+
+    const auth = getAuth();
+    const navigate = useNavigate();
 
     // Fetch all students
     useEffect(() => {
-        const fetchStudents = async () => {
-            try {
-                const response = await axios.get("/api/admin/students");
-                setStudents(response.data);
-            } catch (error) {
-                setMessage("Failed to fetch students");
-            }
-        };
+        if (activeTab === "students") {
+            setLoading(true);
+            axios.get("/api/admin/students")
+                .then(response => setStudents(response.data))
+                .catch(() => setMessage("Failed to fetch students"))
+                .finally(() => setLoading(false));
+        }
+    }, [activeTab]);
 
-        fetchStudents();
-    }, []);
+    // Fetch all bookings
+    useEffect(() => {
+        if (activeTab === "bookings") {
+            setLoading(true);
+            axios.get("/api/booking/all-bookings")
+                .then(response => setBookings(response.data))
+                .catch(() => setMessage("Failed to fetch bookings"))
+                .finally(() => setLoading(false));
+        }
+    }, [activeTab]);
 
     // Handle key generation
     const generateKey = async () => {
         try {
-            const response = await axios.post("/api/admin/generate-key");
-            setNewKey(response.data.Key);
+            await axios.post("/api/admin/generate-key");
+            const keysRes = await axios.get("/api/admin/keys");
+            const keys = keysRes.data;
+            const latestKeyObj = keys && keys.length > 0 ? keys[keys.length - 1] : null;
+            setNewKey(latestKeyObj ? latestKeyObj.key : "");
             setMessage("New registration key generated successfully.");
-        } catch (error) {
+        } catch {
             setMessage("Failed to generate key.");
         }
+    };
+
+    // Handle logout
+    const handleLogout = async () => {
+        await signOut(auth);
+        navigate("/");
     };
 
     // Handle revoking student access
@@ -39,10 +64,8 @@ const AdminPanel = () => {
         try {
             await axios.post(`/api/admin/revoke-access/${uid}`);
             setMessage("Access revoked successfully.");
-            // Refresh student list after revocation
-            const updatedStudents = students.filter(student => student.uid !== uid);
-            setStudents(updatedStudents);
-        } catch (error) {
+            setStudents(students.filter(student => student.uid !== uid));
+        } catch {
             setMessage("Failed to revoke access.");
         }
     };
@@ -53,57 +76,132 @@ const AdminPanel = () => {
             await axios.put("/api/admin/update-profile", profileData);
             setMessage("Profile updated successfully.");
             setProfileData({});
-            setSelectedStudent(null); // Clear selected student after update
-        } catch (error) {
+            setSelectedStudent(null);
+        } catch {
             setMessage("Failed to update profile.");
         }
     };
 
+    // Handle booking removal
+    const removeBooking = async (bookingId) => {
+        if (!window.confirm("Are you sure you want to remove this booking?")) return;
+        try {
+            await axios.delete(`/api/booking/${bookingId}`);
+            setBookings(bookings.filter(b => b.id !== bookingId && b.bookingId !== bookingId));
+            setMessage("Booking removed successfully.");
+        } catch {
+            setMessage("Failed to remove booking.");
+        }
+    };
+
     return (
-        <div className="admin-panel">
-            <h1>Admin Panel</h1>
+        <div className="admin-panel-bg">
+            <nav className="admin-navbar">
+                <div className="admin-navbar-left">
+                    <span
+                        className={`admin-nav-item${activeTab === "students" ? " active" : ""}`}
+                        onClick={() => setActiveTab("students")}
+                    >
+                        Students
+                    </span>
+                    <span
+                        className={`admin-nav-item${activeTab === "bookings" ? " active" : ""}`}
+                        onClick={() => setActiveTab("bookings")}
+                    >
+                        Bookings
+                    </span>
+                </div>
+                <button className="admin-btn logout-btn" onClick={handleLogout}>
+                    Logout
+                </button>
+            </nav>
+            <div className="admin-panel">
+                <h1>Admin Panel</h1>
 
-            <section>
-                <h2>Generate Registration Key</h2>
-                <button onClick={generateKey}>Generate Key</button>
-                {newKey && <p>Generated Key: {newKey}</p>}
-            </section>
-
-            <section>
-                <h2>Current Students</h2>
-                <ul>
-                    {students.map((student) => (
-                        <li key={student.uid}>
-                            <div>
-                                <strong>{student.name}</strong> - {student.email}
-                                <button onClick={() => setSelectedStudent(student)}>Update Profile</button>
-                                <button onClick={() => revokeAccess(student.uid)}>Revoke Access</button>
+                {activeTab === "students" && (
+                    <>
+                        <section className="admin-section">
+                            <h2>Generate Registration Key</h2>
+                            <div className="admin-key-row">
+                                <button className="admin-btn" onClick={generateKey}>Generate Key</button>
+                                {newKey && <span className="admin-key">{newKey}</span>}
                             </div>
-                        </li>
-                    ))}
-                </ul>
-            </section>
+                        </section>
 
-            {selectedStudent && (
-                <section>
-                    <h2>Update Profile for {selectedStudent.name}</h2>
-                    <input
-                        type="text"
-                        placeholder="Update Name"
-                        value={profileData.name || selectedStudent.name}
-                        onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                    />
-                    <input
-                        type="email"
-                        placeholder="Update Email"
-                        value={profileData.email || selectedStudent.email}
-                        onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                    />
-                    <button onClick={updateProfile}>Update Profile</button>
-                </section>
-            )}
+                        <section className="admin-section">
+                            <h2>Current Students</h2>
+                            {loading ? <p>Loading...</p> : (
+                                <ul className="admin-list">
+                                    {students.map((student) => (
+                                        <li key={student.uid} className="admin-list-item">
+                                            <div>
+                                                <strong>{student.name}</strong> <span className="admin-email">({student.email})</span>
+                                            </div>
+                                            <div className="admin-actions">
+                                                <button className="admin-btn" onClick={() => setSelectedStudent(student)}>Update Profile</button>
+                                                <button className="admin-btn danger" onClick={() => revokeAccess(student.uid)}>Revoke Access</button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
 
-            {message && <p className="message">{message}</p>}
+                        {selectedStudent && (
+                            <section className="admin-section">
+                                <h2>Update Profile for {selectedStudent.name}</h2>
+                                <input
+                                    type="text"
+                                    placeholder="Update Name"
+                                    value={profileData.name || selectedStudent.name}
+                                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                                />
+                                <input
+                                    type="email"
+                                    placeholder="Update Email"
+                                    value={profileData.email || selectedStudent.email}
+                                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                                />
+                                <button className="admin-btn" onClick={updateProfile}>Update Profile</button>
+                                <button className="admin-btn" onClick={() => setSelectedStudent(null)}>Cancel</button>
+                            </section>
+                        )}
+                    </>
+                )}
+
+                {activeTab === "bookings" && (
+                    <section className="admin-section">
+                        <h2>All Bookings</h2>
+                        <div className="admin-bookings-scroll">
+                            {loading ? <p>Loading...</p> : (
+                                <ul className="admin-list">
+                                    {bookings.length === 0 && <li>No bookings found.</li>}
+                                    {bookings.map((b) => (
+                                        <li key={b.id || b.bookingId} className="admin-list-item">
+                                            <div>
+                                                <b>{b.studentDisplayName || b.studentName || b.studentEmail}</b>
+                                                {" with "}
+                                                <b>{b.instructorDisplayName || b.instructorName || b.instructorEmail}</b>
+                                                <br />
+                                                <span>
+                                                    {new Date(b.start).toLocaleString()} - {new Date(b.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                            <div className="admin-actions">
+                                                <button className="admin-btn danger" onClick={() => removeBooking(b.id || b.bookingId)}>
+                                                    Remove Booking
+                                                </button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </section>
+                )}
+
+                {message && <p className="admin-message">{message}</p>}
+            </div>
         </div>
     );
 };

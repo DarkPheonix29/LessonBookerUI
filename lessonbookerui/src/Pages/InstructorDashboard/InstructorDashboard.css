@@ -1,0 +1,11 @@
+.instructor-dashboard-root {
+    color: #111;
+}
+
+    .instructor-dashboard-root .text-[#6ce5ff] {
+        color: #6ce5ff !important;
+    }
+
+    .instructor-dashboard-root .text-blue-600 {
+        color: #2563eb !important;
+    }

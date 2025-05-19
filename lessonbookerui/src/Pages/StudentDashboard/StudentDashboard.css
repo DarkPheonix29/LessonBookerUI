@@ -1,2 +1,11 @@
-body {
+.student-dashboard-root {
+    color: #111;
 }
+
+    .student-dashboard-root .text-[#6ce5ff] {
+        color: #6ce5ff !important;
+    }
+
+    .student-dashboard-root .text-blue-600 {
+        color: #2563eb !important;
+    }

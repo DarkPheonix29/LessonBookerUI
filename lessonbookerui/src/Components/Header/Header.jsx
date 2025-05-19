@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import "./Header.css";
 
-const Header = ({ variant = "login", userEmail, onLogout }) => {
+const Header = ({ variant = "login", displayName, onLogout }) => {
     const isDashboard = variant === "dashboard";
 
     return (
@@ -17,7 +17,7 @@ const Header = ({ variant = "login", userEmail, onLogout }) => {
 
             {isDashboard && (
                 <div className="userMenu">
-                    <span className="userEmail">{userEmail}</span>
+                    <span className="userEmail">{displayName}</span>
                     <button onClick={onLogout} className="logoutButton">
                         Logout
                     </button>
