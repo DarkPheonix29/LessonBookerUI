@@ -5,6 +5,7 @@ import Header from "../../Components/Header/Header";
 import Calendar from "../../Components/Calendar/Calendar";
 import axios from "axios";
 import "./InstructorDashboard.css";
+import API_BASE_URL from "../../Components/API/API";
 
 const InstructorDashboard = () => {
     const auth = getAuth();
@@ -15,7 +16,7 @@ const InstructorDashboard = () => {
 
     useEffect(() => {
         if (userEmail) {
-            axios.get(`/api/profile/${userEmail}`)
+            axios.get(`${API_BASE_URL}/api/profile/${userEmail}`)
                 .then(res => setDisplayName(res.data.displayName || userEmail))
                 .catch(() => setDisplayName(userEmail));
         }

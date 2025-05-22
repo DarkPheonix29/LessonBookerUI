@@ -5,6 +5,7 @@ import Header from "../../Components/Header/Header";
 import Calendar from "../../Components/Calendar/Calendar";
 import axios from 'axios';
 import "./StudentCalendar.css";
+import API_BASE_URL from "../../Components/API/API";
 
 const StudentCalendar = () => {
     const auth = getAuth();
@@ -16,11 +17,11 @@ const StudentCalendar = () => {
 
     useEffect(() => {
         if (userEmail) {
-            axios.get(`/api/profile/${userEmail}`)
+            axios.get(`${API_BASE_URL}/api/profile/${userEmail}`)
                 .then(res => setDisplayName(res.data.displayName || userEmail))
                 .catch(() => setDisplayName(userEmail));
 
-            axios.get(`/api/booking/student/${userEmail}`)
+            axios.get(`${API_BASE_URL}/api/booking/student/${userEmail}`)
                 .then(res => {
                     const now = new Date();
                     const upcoming = res.data

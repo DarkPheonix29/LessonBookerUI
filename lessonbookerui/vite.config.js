@@ -7,11 +7,10 @@ export default defineConfig({
     server: {
         proxy: {
             '^/api/': {
-                target: 'https://localhost:7012', // Change this if your backend runs on a different port
-                secure: false,
-                changeOrigin: true
+                target: 'https://your-cloud-run-service-xyz.a.run.app',
+                changeOrigin: true,
+                secure: true
             }
-        },
-        port: 50623
+        }
     }
 })

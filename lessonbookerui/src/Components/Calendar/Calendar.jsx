@@ -17,6 +17,8 @@ import {
     isSameDay as isSameDayDateFns
 } from "date-fns";
 import "./Calendar.css";
+import API_BASE_URL from "../../Components/API/API";
+
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
@@ -46,7 +48,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
 
     useEffect(() => {
         if (isInstructor) {
-            axios.get(`/api/availability/${instructorEmail}`)
+            axios.get(`${API_BASE_URL}/api/availability/${instructorEmail}`)
                 .then(response => {
                     const parsed = response.data.map(a => ({
                         ...a,
@@ -57,7 +59,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                 })
                 .catch(error => console.error("Error fetching availability:", error));
 
-            axios.get(`/api/booking/instructor/${instructorEmail}`)
+            axios.get(`${API_BASE_URL}/api/booking/instructor/${instructorEmail}`)
                 .then(response => {
                     const parsed = response.data.map(b => ({
                         ...b,
@@ -70,7 +72,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                 })
                 .catch(error => console.error("Error fetching bookings:", error));
         } else {
-            axios.get(`/api/availability/all-availability`)
+            axios.get(`${API_BASE_URL}/api/availability/all-availability`)
                 .then(response => {
                     const parsed = response.data.map(a => ({
                         ...a,
@@ -81,7 +83,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                 })
                 .catch(error => console.error("Error fetching all instructors' availability:", error));
 
-            axios.get(`/api/booking/all-bookings`)
+            axios.get(`${API_BASE_URL}/api/booking/all-bookings`)
                 .then(response => {
                     const parsed = response.data.map(b => ({
                         ...b,
@@ -103,7 +105,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
             end: end.toISOString()
         };
 
-        axios.post("/api/availability", newAvailability)
+        axios.post("${API_BASE_URL}/api/availability", newAvailability)
             .then(response => {
                 const added = {
                     ...response.data,
@@ -126,7 +128,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
         if (!window.confirm("Are you sure you want to remove this hour from your availability?")) return;
 
         if (containing.start.getTime() === slotStart.getTime() && containing.end.getTime() === slotEnd.getTime()) {
-            axios.delete(`/api/availability/${parseInt(containing.availabilityId || containing.id, 10)}`)
+            axios.delete(`${API_BASE_URL}/api/availability/${parseInt(containing.availabilityId || containing.id, 10)}`)
                 .then(() => {
                     setAvailability(prev => prev.filter(a => a !== containing));
                 })
@@ -150,7 +152,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
             });
         }
 
-        axios.delete(`/api/availability/${parseInt(containing.availabilityId || containing.id, 10)}`)
+        axios.delete(`${API_BASE_URL}/api/availability/${parseInt(containing.availabilityId || containing.id, 10)}`)
             .then(() => {
                 Promise.all(
                     updates.map(u =>
@@ -210,7 +212,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
             end: end.toISOString()
         };
 
-        axios.post("/api/booking", newBooking)
+        axios.post(`${API_BASE_URL}/api/booking`, newBooking)
             .then(response => {
                 const added = {
                     ...response.data,
@@ -230,7 +232,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
         setProfileError(null);
         setShowBookedModal(true);
         try {
-            const res = await axios.get(`/api/profile/${booking.studentEmail}`);
+            const res = await axios.get(`${API_BASE_URL}/api/profile/${booking.studentEmail}`);
             setBookedLessonDetails({
                 ...booking,
                 pickupAddress: res.data.pickupAddress || "Unknown",
@@ -664,19 +666,24 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                 <span className="calendar-title">{getHeaderTitle()}</span>
                 <button className="nav-arrow" onClick={handleNext}>&gt;</button>
                 <div className="calendar-view-options">
+                    {/* 
                     <button
                         className={`view-button${currentView === "day" ? " active" : ""}`}
                         onClick={() => setCurrentView("day")}
                     >Day</button>
+                    */}
                     <button
                         className={`view-button${currentView === "week" ? " active" : ""}`}
                         onClick={() => setCurrentView("week")}
                     >Week</button>
+                    {/*
                     <button
                         className={`view-button${currentView === "month" ? " active" : ""}`}
                         onClick={() => setCurrentView("month")}
                     >Month</button>
+                    */}
                 </div>
+
                 {!isInstructor && (
                     <select
                         className="view-button"

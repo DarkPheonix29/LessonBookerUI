@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../Components/Header/Header';
 import "./ProfileSetup.css";
+import API_BASE_URL from "../../Components/API/API";
 
 const ProfileSetup = () => {
     const [profile, setProfile] = useState({
@@ -35,7 +36,7 @@ const ProfileSetup = () => {
                     : ''
             };
 
-            const response = await axios.post('/api/profile', formattedProfile);
+            const response = await axios.post(`${API_BASE_URL}/api/profile`, formattedProfile);
             if (response.status === 201) {
                 navigate('/studentdashboard');
             }

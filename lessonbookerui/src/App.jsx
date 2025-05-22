@@ -11,6 +11,7 @@ import AdminPanel from './Pages/AdminPanel/AdminPanel';
 import { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import axios from 'axios';
+import API_BASE_URL from "../../Components/API/API";
 
 // ProtectedRoute component
 const ProtectedRoute = ({ user, role, allowedRoles, children }) => {
@@ -105,7 +106,7 @@ const App = () => {
             setUser(user);
             if (user) {
                 try {
-                    const res = await axios.get('/api/account/me', { withCredentials: true });
+                    const res = await axios.get(`${API_BASE_URL}/api/account/me`, { withCredentials: true });
                     setRole(res.data.role);
                 } catch (err) {
                     setRole(null);

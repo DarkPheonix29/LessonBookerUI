@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../Components/Header/Header';
 import "./Signup.css";
+import API_BASE_URL from "../../Components/API/API";
 
 const Signup = () => {
     const [email, setEmail] = useState('');
@@ -15,14 +16,14 @@ const Signup = () => {
         e.preventDefault();
         try {
             // Now including registrationKey in the payload
-            const response = await axios.post('/api/Account/signup', {
+            const response = await axios.post(`${API_BASE_URL}/api/Account/signup`, {
                 email,
                 password,
                 registrationKey
             });
 
             if (response.status === 200) {
-                navigate(`/profilesetup/${email}`);
+                navigate(`${API_BASE_URL}/profilesetup/${email}`);
             }
         } catch (error) {
             setErrorMessage(error.response?.data?.message || 'Signup failed. Please try again.');

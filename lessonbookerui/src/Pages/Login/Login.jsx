@@ -5,6 +5,7 @@ import axios from "axios";
 import "../../../firebase"; // Ensure Firebase is initialized
 import Header from "../../Components/Header/Header";
 import "./Login.css";
+import API_BASE_URL from "../../Components/API/API";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -21,7 +22,7 @@ const Login = () => {
             const idToken = await userCredential.user.getIdToken(); // Get ID token
 
             // Step 2: Send ID token to backend for verification and role retrieval
-            const response = await axios.post("/api/account/login", { idToken });
+            const response = await axios.post(`${API_BASE_URL}/api/account/login`, { idToken });
 
             // Step 3: Handle the backend response and navigate
             if (response.data && response.data.role) {

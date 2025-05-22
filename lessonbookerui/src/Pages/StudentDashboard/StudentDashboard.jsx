@@ -5,6 +5,7 @@ import Header from "../../Components/Header/Header";
 import Calendar from "../../Components/Calendar/Calendar";
 import axios from "axios";
 import "./StudentDashboard.css";
+import API_BASE_URL from "../../Components/API/API";
 
 const StudentDashboard = () => {
     const auth = getAuth();
@@ -16,11 +17,11 @@ const StudentDashboard = () => {
 
     useEffect(() => {
         if (userEmail) {
-            axios.get(`/api/profile/${userEmail}`)
+            axios.get(`${API_BASE_URL}/api/profile/${userEmail}`)
                 .then(res => setDisplayName(res.data.displayName || userEmail))
                 .catch(() => setDisplayName(userEmail));
 
-            axios.get(`/api/booking/student/${userEmail}`)
+            axios.get(`${API_BASE_URL}/api/booking/student/${userEmail}`)
                 .then(res => {
                     const now = Date.now();
                     const upcoming = res.data

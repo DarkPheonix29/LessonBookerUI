@@ -3,6 +3,8 @@ import axios from "axios";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import "./AdminPanel.css";
+import API_BASE_URL from "../../Components/API/API";
+
 
 const AdminPanel = () => {
     const [students, setStudents] = useState([]);
@@ -21,7 +23,7 @@ const AdminPanel = () => {
     useEffect(() => {
         if (activeTab === "students") {
             setLoading(true);
-            axios.get("/api/admin/students")
+            axios.get(`${API_BASE_URL}/api/admin/students`)
                 .then(response => setStudents(response.data))
                 .catch(() => setMessage("Failed to fetch students"))
                 .finally(() => setLoading(false));
@@ -32,7 +34,7 @@ const AdminPanel = () => {
     useEffect(() => {
         if (activeTab === "bookings") {
             setLoading(true);
-            axios.get("/api/booking/all-bookings")
+            axios.get(`${API_BASE_URL}/api/booking/all-bookings`)
                 .then(response => setBookings(response.data))
                 .catch(() => setMessage("Failed to fetch bookings"))
                 .finally(() => setLoading(false));
@@ -42,7 +44,7 @@ const AdminPanel = () => {
     // Handle key generation
     const generateKey = async () => {
         try {
-            await axios.post("/api/admin/generate-key");
+            await axios.post(`${API_BASE_URL}/api/admin/generate-key`);
             const keysRes = await axios.get("/api/admin/keys");
             const keys = keysRes.data;
             const latestKeyObj = keys && keys.length > 0 ? keys[keys.length - 1] : null;
@@ -62,7 +64,7 @@ const AdminPanel = () => {
     // Handle revoking student access
     const revokeAccess = async (uid) => {
         try {
-            await axios.post(`/api/admin/revoke-access/${uid}`);
+            await axios.post(`${API_BASE_URL}/api/admin/revoke-access/${uid}`);
             setMessage("Access revoked successfully.");
             setStudents(students.filter(student => student.uid !== uid));
         } catch {
@@ -73,7 +75,7 @@ const AdminPanel = () => {
     // Handle profile update
     const updateProfile = async () => {
         try {
-            await axios.put("/api/admin/update-profile", profileData);
+            await axios.put(`${API_BASE_URL}/api/admin/update-profile`, profileData);
             setMessage("Profile updated successfully.");
             setProfileData({});
             setSelectedStudent(null);
@@ -86,7 +88,7 @@ const AdminPanel = () => {
     const removeBooking = async (bookingId) => {
         if (!window.confirm("Are you sure you want to remove this booking?")) return;
         try {
-            await axios.delete(`/api/booking/${bookingId}`);
+            await axios.delete(`${API_BASE_URL}/api/booking/${bookingId}`);
             setBookings(bookings.filter(b => b.id !== bookingId && b.bookingId !== bookingId));
             setMessage("Booking removed successfully.");
         } catch {
