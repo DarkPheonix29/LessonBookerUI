@@ -7,7 +7,6 @@ import Header from "../../Components/Header/Header";
 import "./Login.css";
 import API_BASE_URL from "../../Components/API/API";
 
-// Accept fetchAndSetRole as a prop
 const Login = ({ fetchAndSetRole }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -22,34 +21,17 @@ const Login = ({ fetchAndSetRole }) => {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const idToken = await userCredential.user.getIdToken();
 
-            // Step 2: Send ID token to backend for verification and role retrieval
-            const response = await axios.post(`${API_BASE_URL}/api/account/login`, { idToken });
+            // Step 2: Send ID token to backend for verification
+            await axios.post(`${API_BASE_URL}/api/account/login`, { idToken });
 
-            // Step 3: Call fetchAndSetRole to update role in App state
+            // Step 3: Fetch and set role in App state
             if (fetchAndSetRole) {
                 await fetchAndSetRole();
             }
 
-            // Step 4: Handle the backend response and navigate
-            if (response.data && response.data.role) {
-                const role = response.data.role;
-                switch (role) {
-                    case "admin":
-                        navigate("/adminpanel");
-                        break;
-                    case "student":
-                        navigate("/studentdashboard");
-                        break;
-                    case "instructor":
-                        navigate("/instructordashboard");
-                        break;
-                    default:
-                        setError("Role not assigned. Please contact support.");
-                        break;
-                }
-            } else {
-                setError("Failed to log in. Please check your credentials.");
-            }
+            // Step 4: Let AppRoutes handle the redirect based on role
+            navigate("/");
+
         } catch (err) {
             setError("Failed to log in. Please check your credentials.");
         }

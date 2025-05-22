@@ -10,24 +10,20 @@ import InstructorCalendar from './Pages/InstructorCalendar/InstructorCalendar';
 import AdminPanel from './Pages/AdminPanel/AdminPanel';
 import { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import axios from 'axios';
-import API_BASE_URL from "../src/Components/API/API";
+import { fetchUserRole } from "./Components/API/account";
 
-// ProtectedRoute component
 const ProtectedRoute = ({ user, role, allowedRoles, children }) => {
     if (!user) return <Login />;
     if (!allowedRoles.includes(role)) return <div style={{ padding: 40, textAlign: "center" }}>Access Denied</div>;
     return children;
 };
 
-const AppRoutes = ({ user, role, loading }) => {
+const AppRoutes = ({ user, role, loading, fetchAndSetRole }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
         if (loading) return;
-
-        // Only redirect if on root or login/signup page
         const publicPaths = ["/", "/login", "/signup"];
         if (!user && !publicPaths.includes(location.pathname)) {
             navigate("/", { replace: true });
@@ -45,7 +41,7 @@ const AppRoutes = ({ user, role, loading }) => {
     return (
         <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<Login fetchAndSetRole={fetchAndSetRole} />} />
             <Route path="/signup" element={<Signup />} />
             <Route
                 path="/studentdashboard"
@@ -101,16 +97,21 @@ const App = () => {
     const [loading, setLoading] = useState(true);
     const auth = getAuth();
 
+    // This function can be called from Login.jsx after login
+    const fetchAndSetRole = async () => {
+        try {
+            const role = await fetchUserRole();
+            setRole(role);
+        } catch {
+            setRole(null);
+        }
+    };
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setUser(user);
             if (user) {
-                try {
-                    const res = await axios.get(`${API_BASE_URL}/api/account/me`, { withCredentials: true });
-                    setRole(res.data.role);
-                } catch (err) {
-                    setRole(null);
-                }
+                await fetchAndSetRole();
             } else {
                 setRole(null);
             }
@@ -123,7 +124,7 @@ const App = () => {
 
     return (
         <Router>
-            <AppRoutes user={user} role={role} loading={loading} />
+            <AppRoutes user={user} role={role} loading={loading} fetchAndSetRole={fetchAndSetRole} />
         </Router>
     );
 };
