@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../Components/Header/Header";
 import Calendar from "../../Components/Calendar/Calendar";
 import axios from 'axios';
-import "./instructorCalendar.css";
+import "./InstructorCalendar.css";
 
 const InstructorCalendar = () => {
     const auth = getAuth();
