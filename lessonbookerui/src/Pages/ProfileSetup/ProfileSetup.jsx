@@ -5,6 +5,12 @@ import Header from '../../Components/Header/Header';
 import "./ProfileSetup.css";
 import API_BASE_URL from "../../Components/API/API";
 
+// Helper to get the Authorization header
+const getAuthHeader = () => {
+    const idToken = localStorage.getItem("idToken");
+    return idToken ? { Authorization: `Bearer ${idToken}` } : {};
+};
+
 const ProfileSetup = () => {
     const [profile, setProfile] = useState({
         displayName: '',
@@ -36,7 +42,11 @@ const ProfileSetup = () => {
                     : ''
             };
 
-            const response = await axios.post(`${API_BASE_URL}/api/profile`, formattedProfile);
+            const response = await axios.post(
+                `${API_BASE_URL}/api/profile`,
+                formattedProfile,
+                { headers: getAuthHeader() }
+            );
             if (response.status === 201) {
                 navigate('/studentdashboard');
             }

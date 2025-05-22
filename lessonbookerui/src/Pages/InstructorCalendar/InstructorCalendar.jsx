@@ -7,6 +7,12 @@ import axios from 'axios';
 import "./InstructorCalendar.css";
 import API_BASE_URL from "../../Components/API/API";
 
+// Helper to get the Authorization header
+const getAuthHeader = () => {
+    const idToken = localStorage.getItem("idToken");
+    return idToken ? { Authorization: `Bearer ${idToken}` } : {};
+};
+
 const InstructorCalendar = () => {
     const auth = getAuth();
     const navigate = useNavigate();
@@ -16,7 +22,10 @@ const InstructorCalendar = () => {
 
     useEffect(() => {
         if (userEmail) {
-            axios.get(`${API_BASE_URL}/api/profile/${userEmail}`)
+            axios
+                .get(`${API_BASE_URL}/api/profile/${userEmail}`, {
+                    headers: getAuthHeader(),
+                })
                 .then(res => setDisplayName(res.data.displayName || userEmail))
                 .catch(() => setDisplayName(userEmail));
         }
@@ -24,6 +33,7 @@ const InstructorCalendar = () => {
 
     const handleLogout = async () => {
         await signOut(auth);
+        localStorage.removeItem("idToken");
         navigate("/");
     };
 

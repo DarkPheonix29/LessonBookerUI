@@ -7,6 +7,12 @@ import axios from "axios";
 import "./StudentDashboard.css";
 import API_BASE_URL from "../../Components/API/API";
 
+// Helper to get the Authorization header
+const getAuthHeader = () => {
+    const idToken = localStorage.getItem("idToken");
+    return idToken ? { Authorization: `Bearer ${idToken}` } : {};
+};
+
 const StudentDashboard = () => {
     const auth = getAuth();
     const navigate = useNavigate();
@@ -17,24 +23,34 @@ const StudentDashboard = () => {
 
     useEffect(() => {
         if (userEmail) {
-            axios.get(`${API_BASE_URL}/api/profile/${userEmail}`)
-                .then(res => setDisplayName(res.data.displayName || userEmail))
+            // Fetch display name
+            axios
+                .get(`${API_BASE_URL}/api/profile/${userEmail}`, {
+                    headers: getAuthHeader(),
+                })
+                .then((res) => setDisplayName(res.data.displayName || userEmail))
                 .catch(() => setDisplayName(userEmail));
 
-            axios.get(`${API_BASE_URL}/api/booking/student/${userEmail}`)
-                .then(res => {
+            // Fetch next lesson
+            axios
+                .get(`${API_BASE_URL}/api/booking/student/${userEmail}`, {
+                    headers: getAuthHeader(),
+                })
+                .then((res) => {
                     const now = Date.now();
                     const upcoming = res.data
-                        .map(b => ({ ...b, start: new Date(b.start) }))
-                        .filter(b => b.start.getTime() > now)
+                        .map((b) => ({ ...b, start: new Date(b.start) }))
+                        .filter((b) => b.start.getTime() > now)
                         .sort((a, b) => a.start - b.start);
                     setNextLesson(upcoming.length > 0 ? upcoming[0] : null);
-                });
+                })
+                .catch(() => setNextLesson(null));
         }
     }, [userEmail]);
 
     const handleLogout = async () => {
         await signOut(auth);
+        localStorage.removeItem("idToken");
         navigate("/");
     };
 
@@ -48,7 +64,7 @@ const StudentDashboard = () => {
                         Your next lesson is:{" "}
                         <span className="text-[#6ce5ff]">
                             {nextLesson
-                                ? `${nextLesson.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}, ${nextLesson.start.toLocaleDateString()}`
+                                ? `${nextLesson.start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}, ${nextLesson.start.toLocaleDateString()}`
                                 : "No upcoming lessons"}
                         </span>
                     </p>

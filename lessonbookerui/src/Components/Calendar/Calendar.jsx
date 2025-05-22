@@ -19,8 +19,13 @@ import {
 import "./Calendar.css";
 import API_BASE_URL from "../../Components/API/API";
 
-
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
+
+// Helper to get the Authorization header
+const getAuthHeader = () => {
+    const idToken = localStorage.getItem("idToken");
+    return idToken ? { Authorization: `Bearer ${idToken}` } : {};
+};
 
 export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = "full", instructorEmail, studentEmail }) {
     const [currentView, setCurrentView] = useState("week");
@@ -48,7 +53,9 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
 
     useEffect(() => {
         if (isInstructor) {
-            axios.get(`${API_BASE_URL}/api/availability/${instructorEmail}`)
+            axios.get(`${API_BASE_URL}/api/availability/${instructorEmail}`, {
+                headers: getAuthHeader(),
+            })
                 .then(response => {
                     const parsed = response.data.map(a => ({
                         ...a,
@@ -59,7 +66,9 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                 })
                 .catch(error => console.error("Error fetching availability:", error));
 
-            axios.get(`${API_BASE_URL}/api/booking/instructor/${instructorEmail}`)
+            axios.get(`${API_BASE_URL}/api/booking/instructor/${instructorEmail}`, {
+                headers: getAuthHeader(),
+            })
                 .then(response => {
                     const parsed = response.data.map(b => ({
                         ...b,
@@ -72,7 +81,9 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                 })
                 .catch(error => console.error("Error fetching bookings:", error));
         } else {
-            axios.get(`${API_BASE_URL}/api/availability/all-availability`)
+            axios.get(`${API_BASE_URL}/api/availability/all-availability`, {
+                headers: getAuthHeader(),
+            })
                 .then(response => {
                     const parsed = response.data.map(a => ({
                         ...a,
@@ -83,7 +94,9 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                 })
                 .catch(error => console.error("Error fetching all instructors' availability:", error));
 
-            axios.get(`${API_BASE_URL}/api/booking/all-bookings`)
+            axios.get(`${API_BASE_URL}/api/booking/all-bookings`, {
+                headers: getAuthHeader(),
+            })
                 .then(response => {
                     const parsed = response.data.map(b => ({
                         ...b,
@@ -105,7 +118,9 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
             end: end.toISOString()
         };
 
-        axios.post("${API_BASE_URL}/api/availability", newAvailability)
+        axios.post(`${API_BASE_URL}/api/availability`, newAvailability, {
+            headers: getAuthHeader(),
+        })
             .then(response => {
                 const added = {
                     ...response.data,
@@ -128,7 +143,9 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
         if (!window.confirm("Are you sure you want to remove this hour from your availability?")) return;
 
         if (containing.start.getTime() === slotStart.getTime() && containing.end.getTime() === slotEnd.getTime()) {
-            axios.delete(`${API_BASE_URL}/api/availability/${parseInt(containing.availabilityId || containing.id, 10)}`)
+            axios.delete(`${API_BASE_URL}/api/availability/${parseInt(containing.availabilityId || containing.id, 10)}`, {
+                headers: getAuthHeader(),
+            })
                 .then(() => {
                     setAvailability(prev => prev.filter(a => a !== containing));
                 })
@@ -152,11 +169,15 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
             });
         }
 
-        axios.delete(`${API_BASE_URL}/api/availability/${parseInt(containing.availabilityId || containing.id, 10)}`)
+        axios.delete(`${API_BASE_URL}/api/availability/${parseInt(containing.availabilityId || containing.id, 10)}`, {
+            headers: getAuthHeader(),
+        })
             .then(() => {
                 Promise.all(
                     updates.map(u =>
-                        axios.post("/api/availability", u)
+                        axios.post(`${API_BASE_URL}/api/availability`, u, {
+                            headers: getAuthHeader(),
+                        })
                             .then(res => ({
                                 ...res.data,
                                 start: new Date(res.data.start),
@@ -212,7 +233,9 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
             end: end.toISOString()
         };
 
-        axios.post(`${API_BASE_URL}/api/booking`, newBooking)
+        axios.post(`${API_BASE_URL}/api/booking`, newBooking, {
+            headers: getAuthHeader(),
+        })
             .then(response => {
                 const added = {
                     ...response.data,
@@ -232,7 +255,9 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
         setProfileError(null);
         setShowBookedModal(true);
         try {
-            const res = await axios.get(`${API_BASE_URL}/api/profile/${booking.studentEmail}`);
+            const res = await axios.get(`${API_BASE_URL}/api/profile/${booking.studentEmail}`, {
+                headers: getAuthHeader(),
+            });
             setBookedLessonDetails({
                 ...booking,
                 pickupAddress: res.data.pickupAddress || "Unknown",

@@ -15,7 +15,6 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Now including registrationKey in the payload
             const response = await axios.post(`${API_BASE_URL}/api/Account/signup`, {
                 email,
                 password,
@@ -23,13 +22,12 @@ const Signup = () => {
             });
 
             if (response.status === 200) {
-                navigate(`${API_BASE_URL}/profilesetup/${email}`);
+                navigate(`/profilesetup/${email}`);
             }
         } catch (error) {
             setErrorMessage(error.response?.data?.message || 'Signup failed. Please try again.');
         }
     };
-
 
     return (
         <>

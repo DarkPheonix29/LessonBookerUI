@@ -5,6 +5,11 @@ import { useNavigate } from "react-router-dom";
 import "./AdminPanel.css";
 import API_BASE_URL from "../../Components/API/API";
 
+// Helper to get the Authorization header
+const getAuthHeader = () => {
+    const idToken = localStorage.getItem("idToken");
+    return idToken ? { Authorization: `Bearer ${idToken}` } : {};
+};
 
 const AdminPanel = () => {
     const [students, setStudents] = useState([]);
@@ -23,7 +28,9 @@ const AdminPanel = () => {
     useEffect(() => {
         if (activeTab === "students") {
             setLoading(true);
-            axios.get(`${API_BASE_URL}/api/admin/students`)
+            axios.get(`${API_BASE_URL}/api/admin/students`, {
+                headers: getAuthHeader(),
+            })
                 .then(response => setStudents(response.data))
                 .catch(() => setMessage("Failed to fetch students"))
                 .finally(() => setLoading(false));
@@ -34,7 +41,9 @@ const AdminPanel = () => {
     useEffect(() => {
         if (activeTab === "bookings") {
             setLoading(true);
-            axios.get(`${API_BASE_URL}/api/booking/all-bookings`)
+            axios.get(`${API_BASE_URL}/api/booking/all-bookings`, {
+                headers: getAuthHeader(),
+            })
                 .then(response => setBookings(response.data))
                 .catch(() => setMessage("Failed to fetch bookings"))
                 .finally(() => setLoading(false));
@@ -44,8 +53,12 @@ const AdminPanel = () => {
     // Handle key generation
     const generateKey = async () => {
         try {
-            await axios.post(`${API_BASE_URL}/api/admin/generate-key`);
-            const keysRes = await axios.get(`${API_BASE_URL}/api/admin/keys`);
+            await axios.post(`${API_BASE_URL}/api/admin/generate-key`, {}, {
+                headers: getAuthHeader(),
+            });
+            const keysRes = await axios.get(`${API_BASE_URL}/api/admin/keys`, {
+                headers: getAuthHeader(),
+            });
             const keys = keysRes.data;
             const latestKeyObj = keys && keys.length > 0 ? keys[keys.length - 1] : null;
             setNewKey(latestKeyObj ? latestKeyObj.key : "");
@@ -58,13 +71,16 @@ const AdminPanel = () => {
     // Handle logout
     const handleLogout = async () => {
         await signOut(auth);
+        localStorage.removeItem("idToken");
         navigate("/");
     };
 
     // Handle revoking student access
     const revokeAccess = async (uid) => {
         try {
-            await axios.post(`${API_BASE_URL}/api/admin/revoke-access/${uid}`);
+            await axios.post(`${API_BASE_URL}/api/admin/revoke-access/${uid}`, {}, {
+                headers: getAuthHeader(),
+            });
             setMessage("Access revoked successfully.");
             setStudents(students.filter(student => student.uid !== uid));
         } catch {
@@ -75,7 +91,9 @@ const AdminPanel = () => {
     // Handle profile update
     const updateProfile = async () => {
         try {
-            await axios.put(`${API_BASE_URL}/api/admin/update-profile`, profileData);
+            await axios.put(`${API_BASE_URL}/api/admin/update-profile`, profileData, {
+                headers: getAuthHeader(),
+            });
             setMessage("Profile updated successfully.");
             setProfileData({});
             setSelectedStudent(null);
@@ -88,7 +106,9 @@ const AdminPanel = () => {
     const removeBooking = async (bookingId) => {
         if (!window.confirm("Are you sure you want to remove this booking?")) return;
         try {
-            await axios.delete(`${API_BASE_URL}/api/booking/${bookingId}`);
+            await axios.delete(`${API_BASE_URL}/api/booking/${bookingId}`, {
+                headers: getAuthHeader(),
+            });
             setBookings(bookings.filter(b => b.id !== bookingId && b.bookingId !== bookingId));
             setMessage("Booking removed successfully.");
         } catch {

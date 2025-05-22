@@ -3,9 +3,15 @@ import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import Header from "../../Components/Header/Header";
 import Calendar from "../../Components/Calendar/Calendar";
-import axios from 'axios';
+import axios from "axios";
 import "./StudentCalendar.css";
 import API_BASE_URL from "../../Components/API/API";
+
+// Helper to get the Authorization header
+const getAuthHeader = () => {
+    const idToken = localStorage.getItem("idToken");
+    return idToken ? { Authorization: `Bearer ${idToken}` } : {};
+};
 
 const StudentCalendar = () => {
     const auth = getAuth();
@@ -17,24 +23,34 @@ const StudentCalendar = () => {
 
     useEffect(() => {
         if (userEmail) {
-            axios.get(`${API_BASE_URL}/api/profile/${userEmail}`)
-                .then(res => setDisplayName(res.data.displayName || userEmail))
+            // Fetch display name
+            axios
+                .get(`${API_BASE_URL}/api/profile/${userEmail}`, {
+                    headers: getAuthHeader(),
+                })
+                .then((res) => setDisplayName(res.data.displayName || userEmail))
                 .catch(() => setDisplayName(userEmail));
 
-            axios.get(`${API_BASE_URL}/api/booking/student/${userEmail}`)
-                .then(res => {
+            // Fetch next lesson
+            axios
+                .get(`${API_BASE_URL}/api/booking/student/${userEmail}`, {
+                    headers: getAuthHeader(),
+                })
+                .then((res) => {
                     const now = new Date();
                     const upcoming = res.data
-                        .map(b => ({ ...b, start: new Date(b.start) }))
-                        .filter(b => b.start > now)
+                        .map((b) => ({ ...b, start: new Date(b.start) }))
+                        .filter((b) => b.start > now)
                         .sort((a, b) => a.start - b.start);
                     setNextLesson(upcoming.length > 0 ? upcoming[0] : null);
-                });
+                })
+                .catch(() => setNextLesson(null));
         }
     }, [userEmail]);
 
     const handleLogout = async () => {
         await signOut(auth);
+        localStorage.removeItem("idToken");
         navigate("/");
     };
 

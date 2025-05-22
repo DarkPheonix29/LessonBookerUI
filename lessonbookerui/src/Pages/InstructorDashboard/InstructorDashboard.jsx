@@ -7,6 +7,12 @@ import axios from "axios";
 import "./InstructorDashboard.css";
 import API_BASE_URL from "../../Components/API/API";
 
+// Helper to get the Authorization header
+const getAuthHeader = () => {
+    const idToken = localStorage.getItem("idToken");
+    return idToken ? { Authorization: `Bearer ${idToken}` } : {};
+};
+
 const InstructorDashboard = () => {
     const auth = getAuth();
     const navigate = useNavigate();
@@ -16,14 +22,18 @@ const InstructorDashboard = () => {
 
     useEffect(() => {
         if (userEmail) {
-            axios.get(`${API_BASE_URL}/api/profile/${userEmail}`)
-                .then(res => setDisplayName(res.data.displayName || userEmail))
+            axios
+                .get(`${API_BASE_URL}/api/profile/${userEmail}`, {
+                    headers: getAuthHeader(),
+                })
+                .then((res) => setDisplayName(res.data.displayName || userEmail))
                 .catch(() => setDisplayName(userEmail));
         }
     }, [userEmail]);
 
     const handleLogout = async () => {
         await signOut(auth);
+        localStorage.removeItem("idToken");
         navigate("/");
     };
 
