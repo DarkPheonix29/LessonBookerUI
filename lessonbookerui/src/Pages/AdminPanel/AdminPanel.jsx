@@ -45,7 +45,7 @@ const AdminPanel = () => {
     const generateKey = async () => {
         try {
             await axios.post(`${API_BASE_URL}/api/admin/generate-key`);
-            const keysRes = await axios.get("/api/admin/keys");
+            const keysRes = await axios.get(`${API_BASE_URL}/api/admin/keys`);
             const keys = keysRes.data;
             const latestKeyObj = keys && keys.length > 0 ? keys[keys.length - 1] : null;
             setNewKey(latestKeyObj ? latestKeyObj.key : "");
