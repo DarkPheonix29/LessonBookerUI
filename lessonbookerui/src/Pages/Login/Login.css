@@ -31,7 +31,7 @@ body {
     border-radius: 8px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     margin-top: 100px; /* Moves the box down from header */
-    color: black; /* Ensures all text inside is black */
+    color: black; 
 }
 
 /* Input Groups */
