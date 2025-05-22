@@ -21,21 +21,36 @@ const Login = ({ fetchAndSetRole }) => {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const idToken = await userCredential.user.getIdToken();
 
-            // Step 2: Send ID token to backend for verification
-            await axios.post(`${API_BASE_URL}/api/account/login`, { idToken });
+            // Step 2: Send ID token to backend for verification and get role
+            const response = await axios.post(`${API_BASE_URL}/api/account/login`, { idToken });
 
-            // Step 3: Fetch and set role in App state
-            if (fetchAndSetRole) {
-                await fetchAndSetRole();
+            // Step 3: Use the role from the response
+            if (response.data && response.data.role) {
+                // Store the role in your app state (e.g., via a context or prop callback)
+                // Example: setRole(response.data.role);
+                // Then navigate as needed
+                switch (response.data.role) {
+                    case "admin":
+                        navigate("/adminpanel");
+                        break;
+                    case "student":
+                        navigate("/studentdashboard");
+                        break;
+                    case "instructor":
+                        navigate("/instructordashboard");
+                        break;
+                    default:
+                        setError("Role not assigned. Please contact support.");
+                        break;
+                }
+            } else {
+                setError("Failed to log in. Please check your credentials.");
             }
-
-            // Step 4: Let AppRoutes handle the redirect based on role
-            navigate("/");
-
         } catch (err) {
             setError("Failed to log in. Please check your credentials.");
         }
     };
+
 
     return (
         <>
