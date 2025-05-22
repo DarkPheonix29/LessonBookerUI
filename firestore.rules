@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Allow only authenticated users with allowed roles
+    function isAllowedRole() {
+      // List your allowed roles here
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'instructor', 'student'];
+    }
+
+    // Example: Protect all documents
+    match /{document=**} {
+      allow read, write: if request.auth != null && isAllowedRole();
+    }
+  }
+}
