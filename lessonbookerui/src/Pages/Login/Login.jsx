@@ -7,7 +7,8 @@ import Header from "../../Components/Header/Header";
 import "./Login.css";
 import API_BASE_URL from "../../Components/API/API";
 
-const Login = () => {
+// Accept fetchAndSetRole as a prop
+const Login = ({ fetchAndSetRole }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
@@ -19,12 +20,17 @@ const Login = () => {
         try {
             // Step 1: Sign in with Firebase
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const idToken = await userCredential.user.getIdToken(); // Get ID token
+            const idToken = await userCredential.user.getIdToken();
 
             // Step 2: Send ID token to backend for verification and role retrieval
             const response = await axios.post(`${API_BASE_URL}/api/account/login`, { idToken });
 
-            // Step 3: Handle the backend response and navigate
+            // Step 3: Call fetchAndSetRole to update role in App state
+            if (fetchAndSetRole) {
+                await fetchAndSetRole();
+            }
+
+            // Step 4: Handle the backend response and navigate
             if (response.data && response.data.role) {
                 const role = response.data.role;
                 switch (role) {
