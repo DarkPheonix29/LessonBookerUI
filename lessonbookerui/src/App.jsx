@@ -11,7 +11,7 @@ import AdminPanel from './Pages/AdminPanel/AdminPanel';
 import { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import axios from 'axios';
-import API_BASE_URL from "../../Components/API/API";
+import API_BASE_URL from "../src/Components/API/API";
 
 // ProtectedRoute component
 const ProtectedRoute = ({ user, role, allowedRoles, children }) => {
