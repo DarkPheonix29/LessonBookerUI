@@ -77,6 +77,10 @@ const AdminPanel = () => {
 
     // Handle revoking student access
     const revokeAccess = async (uid) => {
+        if (!uid) {
+            setMessage("Invalid student UID.");
+            return;
+        }
         try {
             await axios.post(`${API_BASE_URL}/api/admin/revoke-access/${uid}`, {}, {
                 headers: getAuthHeader(),
@@ -155,13 +159,17 @@ const AdminPanel = () => {
                             {loading ? <p>Loading...</p> : (
                                 <ul className="admin-list">
                                     {students.map((student) => (
-                                        <li key={student.uid} className="admin-list-item">
+                                        <li key={student.uid || student.email} className="admin-list-item">
                                             <div>
                                                 <strong>{student.name}</strong> <span className="admin-email">({student.email})</span>
                                             </div>
                                             <div className="admin-actions">
                                                 <button className="admin-btn" onClick={() => setSelectedStudent(student)}>Update Profile</button>
-                                                <button className="admin-btn danger" onClick={() => revokeAccess(student.uid)}>Revoke Access</button>
+                                                {student.uid && (
+                                                    <button className="admin-btn danger" onClick={() => revokeAccess(student.uid)}>
+                                                        Revoke Access
+                                                    </button>
+                                                )}
                                             </div>
                                         </li>
                                     ))}

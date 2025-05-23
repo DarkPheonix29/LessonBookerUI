@@ -528,7 +528,10 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                                 setShowAvailabilityModal(true);
                                             }
                                         } else if (!isInstructor && isAvailable) {
-                                            const alreadyBooked = bookings.some(b => isSameDayDateFns(b.start, start));
+                                            // FIX: Only check for bookings by the current student
+                                            const alreadyBooked = bookings.some(
+                                                b => b.studentEmail === studentEmail && isSameDayDateFns(b.start, start)
+                                            );
                                             if (alreadyBooked) {
                                                 alert("You can only book one lesson per day.");
                                                 return;
@@ -609,7 +612,10 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                                 setShowAvailabilityModal(true);
                                             }
                                         } else if (!isInstructor && isAvailable) {
-                                            const alreadyBooked = bookings.some(b => isSameDayDateFns(b.start, start));
+                                            // FIX: Only check for bookings by the current student
+                                            const alreadyBooked = bookings.some(
+                                                b => b.studentEmail === studentEmail && isSameDayDateFns(b.start, start)
+                                            );
                                             if (alreadyBooked) {
                                                 alert("You can only book one lesson per day.");
                                                 return;
@@ -712,18 +718,6 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                     >Month</button>
                     */}
                 </div>
-
-                {!isInstructor && (
-                    <select
-                        className="view-button"
-                        style={{ minWidth: 90, marginLeft: 10, padding: "8px 12px" }}
-                        value={bookingDuration}
-                        onChange={(e) => setBookingDuration(Number(e.target.value))}
-                    >
-                        <option value={1}>1 Hour</option>
-                        <option value={2}>2 Hours</option>
-                    </select>
-                )}
             </div>
 
             {showAvailabilityModal && renderAvailabilityModal()}
