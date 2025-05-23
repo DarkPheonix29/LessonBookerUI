@@ -166,9 +166,17 @@ const AdminPanel = () => {
                                             <div className="admin-actions">
                                                 <button className="admin-btn" onClick={() => setSelectedStudent(student)}>Update Profile</button>
                                                 {student.uid && (
-                                                    <button className="admin-btn danger" onClick={() => revokeAccess(student.uid)}>
+                                                    <button
+                                                        className="admin-btn danger"
+                                                        onClick={() => {
+                                                            if (window.confirm(`Are you sure you want to revoke access for ${student.DisplayName || student.Email}?`)) {
+                                                                revokeAccess(student.uid);
+                                                            }
+                                                        }}
+                                                    >
                                                         Revoke Access
                                                     </button>
+
                                                 )}
                                             </div>
                                         </li>
