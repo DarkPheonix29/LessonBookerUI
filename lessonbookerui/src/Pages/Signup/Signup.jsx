@@ -5,6 +5,7 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import Header from '../../Components/Header/Header';
 import "./Signup.css";
 import API_BASE_URL from "../../Components/API/API";
+import { isProfileComplete } from "../../Components/ProfileCheck"; // <-- Add this import
 
 const Signup = ({ fetchAndSetRole }) => {
     const [email, setEmail] = useState('');
@@ -47,8 +48,21 @@ const Signup = ({ fetchAndSetRole }) => {
                     await fetchAndSetRole();
                 }
 
-                // 6. Navigate to profile setup
-                navigate(`/profilesetup/${email}`);
+                // 6. Check for profile and redirect accordingly
+                const hasProfile = await isProfileComplete(email);
+                if (loginResponse.data.role === "student") {
+                    if (hasProfile) {
+                        navigate("/studentdashboard");
+                    } else {
+                        navigate(`/profilesetup/${email}`);
+                    }
+                } else if (loginResponse.data.role === "instructor") {
+                    navigate("/instructordashboard");
+                } else if (loginResponse.data.role === "admin") {
+                    navigate("/adminpanel");
+                } else {
+                    navigate("/");
+                }
             }
         } catch (error) {
             setErrorMessage(error.response?.data?.message || 'Signup failed. Please try again.');

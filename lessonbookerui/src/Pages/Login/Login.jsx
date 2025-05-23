@@ -2,10 +2,11 @@ import { useState } from "react";
 import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "../../../firebase"; // Ensure Firebase is initialized
+import "../../../firebase";
 import Header from "../../Components/Header/Header";
 import "./Login.css";
 import API_BASE_URL from "../../Components/API/API";
+import { isProfileComplete } from "../../Components/ProfileCheck"; // <-- Add this import
 
 const Login = ({ fetchAndSetRole }) => {
     const [email, setEmail] = useState("");
@@ -31,13 +32,25 @@ const Login = ({ fetchAndSetRole }) => {
                 await fetchAndSetRole();
             }
 
-            // Step 4: Let AppRoutes handle the redirect based on role
-            navigate("/");
+            // Step 4: Check for profile and redirect accordingly
+            const hasProfile = await isProfileComplete(email);
+            if (response.data.role === "student") {
+                if (hasProfile) {
+                    navigate("/studentdashboard");
+                } else {
+                    navigate(`/profilesetup/${email}`);
+                }
+            } else if (response.data.role === "instructor") {
+                navigate("/instructordashboard");
+            } else if (response.data.role === "admin") {
+                navigate("/adminpanel");
+            } else {
+                navigate("/");
+            }
         } catch (err) {
             setError("Failed to log in. Please check your credentials.");
         }
     };
-
 
     return (
         <>
