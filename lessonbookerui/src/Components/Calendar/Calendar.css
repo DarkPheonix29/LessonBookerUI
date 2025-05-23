@@ -194,7 +194,6 @@
     min-width: 110px;
     text-overflow: ellipsis;
     background-color: #fff;
-    white-space: nowrap;
     text-align: center;
     font-size: 14px;
     cursor: pointer;
