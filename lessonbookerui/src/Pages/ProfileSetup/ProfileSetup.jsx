@@ -11,7 +11,7 @@ const getAuthHeader = () => {
     return idToken ? { Authorization: `Bearer ${idToken}` } : {};
 };
 
-const ProfileSetup = () => {
+const ProfileSetup = ({ onProfileComplete }) => {
     const [profile, setProfile] = useState({
         displayName: '',
         phoneNumber: '',
@@ -34,7 +34,6 @@ const ProfileSetup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Format date to include time
             const formattedProfile = {
                 ...profile,
                 dateOfBirth: profile.dateOfBirth
@@ -48,6 +47,7 @@ const ProfileSetup = () => {
                 { headers: getAuthHeader() }
             );
             if (response.status === 201) {
+                if (onProfileComplete) onProfileComplete(); // <-- Notify parent
                 navigate('/studentdashboard');
             }
         } catch (error) {

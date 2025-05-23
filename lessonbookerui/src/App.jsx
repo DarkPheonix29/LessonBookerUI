@@ -61,7 +61,10 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete }) =>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login fetchAndSetRole={fetchAndSetRole} />} />
             <Route path="/signup" element={<Signup fetchAndSetRole={fetchAndSetRole} />} />
-            <Route path="/profilesetup/:email" element={user ? <ProfileSetup /> : <Login />} />
+            <Route
+                path="/profilesetup/:email"
+                element={user ? <ProfileSetup onProfileComplete={() => setProfileComplete(true)} /> : <Login />}
+            />
             <Route
                 path="/studentdashboard"
                 element={
