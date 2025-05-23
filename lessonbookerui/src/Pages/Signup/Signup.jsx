@@ -22,12 +22,17 @@ const Signup = () => {
             });
 
             if (response.status === 200) {
+                const auth = getAuth();
+                await signInWithEmailAndPassword(auth, email, password);
+                const idToken = await auth.currentUser.getIdToken();
+                localStorage.setItem("idToken", idToken);
                 navigate(`/profilesetup/${email}`);
             }
         } catch (error) {
             setErrorMessage(error.response?.data?.message || 'Signup failed. Please try again.');
         }
     };
+
 
     return (
         <>

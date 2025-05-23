@@ -199,7 +199,10 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
             return;
         }
 
-        const alreadyBooked = bookings.some(b => isSameDayDateFns(b.start, start));
+        // Only check for bookings by the current user
+        const alreadyBooked = bookings.some(
+            b => b.studentEmail === studentEmail && isSameDayDateFns(b.start, start)
+        );
         if (alreadyBooked) {
             alert("You can only book one lesson per day.");
             return;
@@ -248,6 +251,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
             })
             .catch(error => console.error("Error adding booking:", error));
     };
+
 
     // Booked lesson modal logic
     const handleBookedSlotClick = async (booking) => {
