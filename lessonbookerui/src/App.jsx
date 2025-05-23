@@ -122,6 +122,10 @@ const App = () => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setUser(user);
             if (user) {
+                // Always refresh and set the ID token in localStorage
+                const idToken = await user.getIdToken(true);
+                localStorage.setItem("idToken", idToken);
+
                 const role = await fetchUserRole();
                 setRole(role);
                 const complete = await isProfileComplete(user.email);
@@ -129,11 +133,13 @@ const App = () => {
             } else {
                 setRole(null);
                 setProfileComplete(false);
+                localStorage.removeItem("idToken");
             }
             setLoading(false);
         });
         return () => unsubscribe();
     }, [auth]);
+
 
     if (loading) return <div>Loading...</div>;
 

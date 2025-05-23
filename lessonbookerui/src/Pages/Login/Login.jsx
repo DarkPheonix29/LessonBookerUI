@@ -6,7 +6,7 @@ import "../../../firebase";
 import Header from "../../Components/Header/Header";
 import "./Login.css";
 import API_BASE_URL from "../../Components/API/API";
-import { isProfileComplete } from "../../Components/ProfileCheck"; // <-- Add this import
+import { isProfileComplete } from "../../Components/ProfileCheck";
 
 const Login = ({ fetchAndSetRole }) => {
     const [email, setEmail] = useState("");
@@ -18,21 +18,22 @@ const Login = ({ fetchAndSetRole }) => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            // Step 1: Sign in with Firebase
+            // 1. Sign in with Firebase
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const idToken = await userCredential.user.getIdToken();
 
-            // Step 2: Send ID token to backend for verification and get role
-            const response = await axios.post(`${API_BASE_URL}/api/account/login`, { idToken });
-
+            // 2. Store the ID token for all future API calls
             localStorage.setItem("idToken", idToken);
 
-            // Step 3: Use the role from the response
+            // 3. Send ID token to backend for verification and get role
+            const response = await axios.post(`${API_BASE_URL}/api/account/login`, { idToken });
+
+            // 4. Fetch and set role if needed
             if (fetchAndSetRole) {
                 await fetchAndSetRole();
             }
 
-            // Step 4: Check for profile and redirect accordingly
+            // 5. Check for profile and redirect accordingly
             const hasProfile = await isProfileComplete(email);
             if (response.data.role === "student") {
                 if (hasProfile) {
