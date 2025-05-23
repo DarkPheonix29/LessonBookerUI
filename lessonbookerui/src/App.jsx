@@ -11,7 +11,7 @@ import AdminPanel from './Pages/AdminPanel/AdminPanel';
 import { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { isProfileComplete } from "../src/Components/ProfileCheck";
-import { fetchUserRole } from "../src/Components/API/account"; 
+import { fetchUserRole } from "../src/Components/API/account";
 
 const ProtectedRoute = ({ user, role, allowedRoles, children }) => {
     if (!user) return <Login />;
@@ -19,7 +19,7 @@ const ProtectedRoute = ({ user, role, allowedRoles, children }) => {
     return children;
 };
 
-const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete }) => {
+const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete, setProfileComplete }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -111,6 +111,7 @@ const App = () => {
     const [profileComplete, setProfileComplete] = useState(null);
     const [loading, setLoading] = useState(true);
     const auth = getAuth();
+    const navigate = useNavigate ? useNavigate() : null; // for SPA navigation
 
     // This function can be called from Login.jsx after login
     const fetchAndSetRole = async (email) => {
@@ -136,17 +137,17 @@ const App = () => {
                 const complete = await isProfileComplete(user.email);
                 setProfileComplete(complete);
 
-                // Initial redirect after login
+                // Initial redirect after login/signup
                 if (role === "student") {
                     if (complete) {
-                        window.location.replace("/studentdashboard");
+                        navigate("/studentdashboard", { replace: true });
                     } else {
-                        window.location.replace(`/profilesetup/${user.email}`);
+                        navigate(`/profilesetup/${user.email}`, { replace: true });
                     }
                 } else if (role === "instructor") {
-                    window.location.replace("/instructordashboard");
+                    navigate("/instructordashboard", { replace: true });
                 } else if (role === "admin") {
-                    window.location.replace("/adminpanel");
+                    navigate("/adminpanel", { replace: true });
                 }
             } else {
                 setRole(null);
@@ -156,7 +157,6 @@ const App = () => {
         });
         return () => unsubscribe();
     }, [auth]);
-
 
     if (loading) return <div>Loading...</div>;
 
@@ -168,6 +168,7 @@ const App = () => {
                 loading={loading}
                 fetchAndSetRole={fetchAndSetRole}
                 profileComplete={profileComplete}
+                setProfileComplete={setProfileComplete}
             />
         </Router>
     );
