@@ -25,22 +25,13 @@ const Login = ({ fetchAndSetRole }) => {
         e.preventDefault();
         setError(null);
         try {
-            // 1. Sign in with Firebase
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const idToken = await userCredential.user.getIdToken();
-
-            // 2. Store the ID token for all future API calls
             localStorage.setItem("idToken", idToken);
-
-            // 3. Send ID token to backend for verification and get role
             const response = await axios.post(`${API_BASE_URL}/api/account/login`, { idToken });
-
-            // 4. Fetch and set role if needed
             if (fetchAndSetRole) {
                 await fetchAndSetRole();
             }
-
-            // 5. Check for profile and redirect accordingly
             const hasProfile = await isProfileComplete(email);
             if (response.data.role === "student") {
                 if (hasProfile) {
@@ -66,75 +57,108 @@ const Login = ({ fetchAndSetRole }) => {
         try {
             await sendPasswordResetEmail(auth, resetEmail);
             setResetMessage("Password reset email sent. Please check your inbox.");
+            setTimeout(() => {
+                setShowReset(false);
+                setResetEmail("");
+                setResetMessage("");
+            }, 2500);
         } catch (err) {
             setResetMessage("Failed to send reset email. Please check the address.");
         }
+    };
+
+    const handleShowReset = () => {
+        setShowReset(true);
+        setResetEmail("");
+        setResetMessage("");
+    };
+
+    const handleBackToLogin = () => {
+        setShowReset(false);
+        setResetEmail("");
+        setResetMessage("");
     };
 
     return (
         <>
             <Header variant="login" />
             <div className="loginContainer">
-                <form onSubmit={handleLogin} className="loginBox">
-                    <div className="inputGroup">
-                        <label htmlFor="email">Email:</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="inputGroup">
-                        <label htmlFor="password">Password:</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    {error && <p className="error">{error}</p>}
-                    <button type="submit" className="loginButton">Login</button>
-                    <p className="forgotLink">
-                        <button
-                            type="button"
-                            className="linkButton"
-                            onClick={() => setShowReset((v) => !v)}
-                            style={{
-                                background: "none",
-                                border: "none",
-                                color: "#0077a6",
-                                cursor: "pointer",
-                                padding: 0,
-                                textDecoration: "underline"
-                            }}
-                        >
-                            Forgot password?
-                        </button>
-                    </p>
-                    <p className="registerLink">
-                        Don't have an account? <a href="/signup">Sign up</a>
-                    </p>
-                </form>
-                {showReset && (
-                    <form onSubmit={handlePasswordReset} className="resetBox" style={{ marginTop: 24 }}>
-                        <div className="inputGroup">
-                            <label htmlFor="resetEmail">Enter your email:</label>
-                            <input
-                                type="email"
-                                id="resetEmail"
-                                value={resetEmail}
-                                onChange={(e) => setResetEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <button type="submit" className="loginButton">Send Reset Email</button>
-                        {resetMessage && <p className="info">{resetMessage}</p>}
-                    </form>
-                )}
+                <div className="loginBox">
+                    {!showReset ? (
+                        <form onSubmit={handleLogin}>
+                            <div className="inputGroup">
+                                <label htmlFor="email">Email:</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="inputGroup">
+                                <label htmlFor="password">Password:</label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            {error && <p className="error">{error}</p>}
+                            <button type="submit" className="loginButton">Login</button>
+                            <p className="forgotLink">
+                                <button
+                                    type="button"
+                                    className="linkButton"
+                                    onClick={handleShowReset}
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        color: "#0077a6",
+                                        cursor: "pointer",
+                                        padding: 0,
+                                        textDecoration: "underline"
+                                    }}
+                                >
+                                    Forgot password?
+                                </button>
+                            </p>
+                            <p className="registerLink">
+                                Don't have an account? <a href="/signup">Sign up</a>
+                            </p>
+                        </form>
+                    ) : (
+                        <form onSubmit={handlePasswordReset}>
+                            <div className="inputGroup">
+                                <label htmlFor="resetEmail">Enter your email:</label>
+                                <input
+                                    type="email"
+                                    id="resetEmail"
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="loginButton">Send Reset Email</button>
+                            <button
+                                type="button"
+                                className="loginButton"
+                                style={{
+                                    marginTop: 10,
+                                    background: "#fff",
+                                    color: "#0077a6",
+                                    border: "1px solid #00cfff"
+                                }}
+                                onClick={handleBackToLogin}
+                            >
+                                Back to login
+                            </button>
+                            {resetMessage && <p className="info">{resetMessage}</p>}
+                        </form>
+                    )}
+                </div>
             </div>
         </>
     );
