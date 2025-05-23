@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
+import { signInWithEmailAndPassword, getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../../firebase";
@@ -12,11 +12,18 @@ const Login = ({ fetchAndSetRole }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
+
+    // Forgot password state
+    const [showReset, setShowReset] = useState(false);
+    const [resetEmail, setResetEmail] = useState("");
+    const [resetMessage, setResetMessage] = useState("");
+
     const navigate = useNavigate();
     const auth = getAuth();
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setError(null);
         try {
             // 1. Sign in with Firebase
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -53,6 +60,17 @@ const Login = ({ fetchAndSetRole }) => {
         }
     };
 
+    const handlePasswordReset = async (e) => {
+        e.preventDefault();
+        setResetMessage("");
+        try {
+            await sendPasswordResetEmail(auth, resetEmail);
+            setResetMessage("Password reset email sent. Please check your inbox.");
+        } catch (err) {
+            setResetMessage("Failed to send reset email. Please check the address.");
+        }
+    };
+
     return (
         <>
             <Header variant="login" />
@@ -80,10 +98,43 @@ const Login = ({ fetchAndSetRole }) => {
                     </div>
                     {error && <p className="error">{error}</p>}
                     <button type="submit" className="loginButton">Login</button>
+                    <p className="forgotLink">
+                        <button
+                            type="button"
+                            className="linkButton"
+                            onClick={() => setShowReset((v) => !v)}
+                            style={{
+                                background: "none",
+                                border: "none",
+                                color: "#0077a6",
+                                cursor: "pointer",
+                                padding: 0,
+                                textDecoration: "underline"
+                            }}
+                        >
+                            Forgot password?
+                        </button>
+                    </p>
                     <p className="registerLink">
                         Don't have an account? <a href="/signup">Sign up</a>
                     </p>
                 </form>
+                {showReset && (
+                    <form onSubmit={handlePasswordReset} className="resetBox" style={{ marginTop: 24 }}>
+                        <div className="inputGroup">
+                            <label htmlFor="resetEmail">Enter your email:</label>
+                            <input
+                                type="email"
+                                id="resetEmail"
+                                value={resetEmail}
+                                onChange={(e) => setResetEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="loginButton">Send Reset Email</button>
+                        {resetMessage && <p className="info">{resetMessage}</p>}
+                    </form>
+                )}
             </div>
         </>
     );
