@@ -10,7 +10,7 @@ import InstructorCalendar from './Pages/InstructorCalendar/InstructorCalendar';
 import AdminPanel from './Pages/AdminPanel/AdminPanel';
 import { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { fetchUserRole } from "./Components/API/account";
+import { fetchUserRole, isProfileComplete } from "./Components/API/account";
 
 const ProtectedRoute = ({ user, role, allowedRoles, children }) => {
     if (!user) return <Login />;
@@ -18,7 +18,7 @@ const ProtectedRoute = ({ user, role, allowedRoles, children }) => {
     return children;
 };
 
-const AppRoutes = ({ user, role, loading, fetchAndSetRole }) => {
+const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -29,6 +29,11 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole }) => {
             navigate("/", { replace: true });
         } else if (user) {
             if (
+                !profileComplete &&
+                !location.pathname.startsWith("/profilesetup/")
+            ) {
+                navigate(`/profilesetup/${user.email}`, { replace: true });
+            } else if (
                 role === "student" &&
                 !(
                     location.pathname === "/studentdashboard" ||
@@ -49,13 +54,14 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole }) => {
                 navigate("/adminpanel", { replace: true });
             }
         }
-    }, [user, role, loading, navigate, location.pathname]);
+    }, [user, role, profileComplete, loading, navigate, location.pathname]);
 
     return (
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login fetchAndSetRole={fetchAndSetRole} />} />
             <Route path="/signup" element={<Signup fetchAndSetRole={fetchAndSetRole} />} />
+            <Route path="/profilesetup/:email" element={user ? <ProfileSetup /> : <Login />} />
             <Route
                 path="/studentdashboard"
                 element={
@@ -71,10 +77,6 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole }) => {
                         <StudentCalendar />
                     </ProtectedRoute>
                 }
-            />
-            <Route
-                path="/profilesetup/:email"
-                element={user ? <ProfileSetup /> : <Login />}
             />
             <Route
                 path="/instructordashboard"
@@ -107,16 +109,22 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole }) => {
 const App = () => {
     const [user, setUser] = useState(null);
     const [role, setRole] = useState(null);
+    const [profileComplete, setProfileComplete] = useState(null);
     const [loading, setLoading] = useState(true);
     const auth = getAuth();
 
     // This function can be called from Login.jsx after login
-    const fetchAndSetRole = async () => {
+    const fetchAndSetRole = async (email) => {
         try {
             const role = await fetchUserRole();
             setRole(role);
+            if (email) {
+                const complete = await isProfileComplete(email);
+                setProfileComplete(complete);
+            }
         } catch {
             setRole(null);
+            setProfileComplete(false);
         }
     };
 
@@ -124,9 +132,10 @@ const App = () => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setUser(user);
             if (user) {
-                await fetchAndSetRole();
+                await fetchAndSetRole(user.email);
             } else {
                 setRole(null);
+                setProfileComplete(false);
             }
             setLoading(false);
         });
@@ -137,7 +146,13 @@ const App = () => {
 
     return (
         <Router>
-            <AppRoutes user={user} role={role} loading={loading} fetchAndSetRole={fetchAndSetRole} />
+            <AppRoutes
+                user={user}
+                role={role}
+                loading={loading}
+                fetchAndSetRole={fetchAndSetRole}
+                profileComplete={profileComplete}
+            />
         </Router>
     );
 };
