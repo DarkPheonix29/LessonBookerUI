@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import Header from '../../Components/Header/Header';
 import "./Signup.css";
 import API_BASE_URL from "../../Components/API/API";
@@ -15,7 +16,7 @@ const Signup = ({ fetchAndSetRole }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // 1. Signup
+            // 1. Signup (create user in backend and Firebase Auth)
             const signupResponse = await axios.post(`${API_BASE_URL}/api/Account/signup`, {
                 email,
                 password,
@@ -23,30 +24,30 @@ const Signup = ({ fetchAndSetRole }) => {
             });
 
             if (signupResponse.status === 200) {
-                // 2. Login (get JWT)
+                // 2. Sign in with Firebase Auth to get the ID token
+                const auth = getAuth();
+                await signInWithEmailAndPassword(auth, email, password);
+                const idToken = await auth.currentUser.getIdToken();
+
+                // 3. Send ID token to backend to get JWT/session
                 const loginResponse = await axios.post(`${API_BASE_URL}/api/account/login`, {
-                    idToken: signupResponse.data.token || signupResponse.data.idToken // or whatever your backend returns
+                    idToken
                 });
 
-                // If your backend returns a token directly on signup, you can skip this login step and use that token.
-
-                // 3. Store JWT
+                // 4. Store JWT (or use idToken if backend doesn't return a new one)
                 if (loginResponse.data && loginResponse.data.token) {
                     localStorage.setItem("idToken", loginResponse.data.token);
-                } else if (signupResponse.data && signupResponse.data.token) {
-                    // fallback if signup already returns a token
-                    localStorage.setItem("idToken", signupResponse.data.token);
                 } else {
-                    setErrorMessage("Signup succeeded but login failed.");
-                    return;
+                    // fallback: store the Firebase ID token
+                    localStorage.setItem("idToken", idToken);
                 }
 
-                // 4. Fetch and set role
+                // 5. Fetch and set role
                 if (fetchAndSetRole) {
                     await fetchAndSetRole();
                 }
 
-                // 5. Navigate to profile setup
+                // 6. Navigate to profile setup
                 navigate(`/profilesetup/${email}`);
             }
         } catch (error) {
