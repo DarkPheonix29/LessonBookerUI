@@ -1,5 +1,5 @@
 import axios from "axios";
-import API_BASE_URL from "./API/API";
+import API_BASE_URL from "./API";
 
 export async function isProfileComplete(email) {
     try {
@@ -7,10 +7,22 @@ export async function isProfileComplete(email) {
         const res = await axios.get(`${API_BASE_URL}/api/profile/${email}`, {
             headers: { Authorization: `Bearer ${idToken}` }
         });
-        // Adjust this logic based on your profile fields
         const profile = res.data;
-        return !!(profile.displayName && profile.phoneNumber && profile.address && profile.dateOfBirth);
-    } catch {
+        // Log for debugging
+        console.log("Profile data for", email, ":", profile);
+
+        // Adjust these fields as needed for your app
+        const complete = !!(
+            profile.displayName &&
+            profile.phoneNumber &&
+            profile.address &&
+            profile.pickupAddress &&
+            profile.dateOfBirth
+        );
+        console.log("Profile complete?", complete);
+        return complete;
+    } catch (err) {
+        console.log("Profile check error:", err);
         return false;
     }
 }
