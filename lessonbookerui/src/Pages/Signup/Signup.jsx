@@ -5,7 +5,7 @@ import Header from '../../Components/Header/Header';
 import "./Signup.css";
 import API_BASE_URL from "../../Components/API/API";
 
-const Signup = (fetchAndSetRole) => {
+const Signup = ({ fetchAndSetRole }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [registrationKey, setRegistrationKey] = useState('');
@@ -15,20 +15,38 @@ const Signup = (fetchAndSetRole) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/Account/signup`, {
+            // 1. Signup
+            const signupResponse = await axios.post(`${API_BASE_URL}/api/Account/signup`, {
                 email,
                 password,
                 registrationKey
             });
 
-            if (response.status === 200 && response.data.token) {
-                localStorage.setItem("idToken", response.data.token);
+            if (signupResponse.status === 200) {
+                // 2. Login (get JWT)
+                const loginResponse = await axios.post(`${API_BASE_URL}/api/account/login`, {
+                    idToken: signupResponse.data.token || signupResponse.data.idToken // or whatever your backend returns
+                });
 
-                // Fetch and set the role in app state
+                // If your backend returns a token directly on signup, you can skip this login step and use that token.
+
+                // 3. Store JWT
+                if (loginResponse.data && loginResponse.data.token) {
+                    localStorage.setItem("idToken", loginResponse.data.token);
+                } else if (signupResponse.data && signupResponse.data.token) {
+                    // fallback if signup already returns a token
+                    localStorage.setItem("idToken", signupResponse.data.token);
+                } else {
+                    setErrorMessage("Signup succeeded but login failed.");
+                    return;
+                }
+
+                // 4. Fetch and set role
                 if (fetchAndSetRole) {
                     await fetchAndSetRole();
                 }
 
+                // 5. Navigate to profile setup
                 navigate(`/profilesetup/${email}`);
             }
         } catch (error) {
