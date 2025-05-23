@@ -161,7 +161,7 @@ const AdminPanel = () => {
                                     {students.map((student) => (
                                         <li key={student.uid || student.email} className="admin-list-item">
                                             <div>
-                                                <strong>{student.name}</strong> <span className="admin-email">({student.email})</span>
+                                                <strong>{student.Email}</strong> <span className="admin-email">({student.email})</span>
                                             </div>
                                             <div className="admin-actions">
                                                 <button className="admin-btn" onClick={() => setSelectedStudent(student)}>Update Profile</button>
@@ -179,22 +179,44 @@ const AdminPanel = () => {
 
                         {selectedStudent && (
                             <section className="admin-section">
-                                <h2>Update Profile for {selectedStudent.name}</h2>
-                                <input
-                                    type="text"
-                                    placeholder="Update Name"
-                                    value={profileData.name || selectedStudent.name}
-                                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                                />
-                                <input
-                                    type="email"
-                                    placeholder="Update Email"
-                                    value={profileData.email || selectedStudent.email}
-                                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                                />
-                                <button className="admin-btn" onClick={updateProfile}>Update Profile</button>
-                                <button className="admin-btn" onClick={() => setSelectedStudent(null)}>Cancel</button>
+                                <h2>Update Profile for {selectedStudent.DisplayName || selectedStudent.Email}</h2>
+                                {Object.keys(selectedStudent)
+                                    .filter(
+                                        (key) =>
+                                            key !== "uid" && // Don't allow editing uid
+                                            key !== "ProfileId" && // Optionally skip ProfileId if you don't want it editable
+                                            typeof selectedStudent[key] !== "object" // Skip nested objects/arrays
+                                    )
+                                    .map((key) => (
+                                        <div key={key} style={{ marginBottom: 10 }}>
+                                            <label style={{ marginRight: 8, minWidth: 120, display: "inline-block" }}>
+                                                {key}:
+                                            </label>
+                                            <input
+                                                type={key.toLowerCase().includes("email") ? "email" : "text"}
+                                                placeholder={`Update ${key}`}
+                                                value={
+                                                    profileData[key] !== undefined
+                                                        ? profileData[key]
+                                                        : selectedStudent[key] !== null && selectedStudent[key] !== undefined
+                                                            ? selectedStudent[key]
+                                                            : ""
+                                                }
+                                                onChange={(e) =>
+                                                    setProfileData({ ...profileData, [key]: e.target.value })
+                                                }
+                                                style={{ minWidth: 200 }}
+                                            />
+                                        </div>
+                                    ))}
+                                <button className="admin-btn" onClick={updateProfile}>
+                                    Update Profile
+                                </button>
+                                <button className="admin-btn" onClick={() => setSelectedStudent(null)}>
+                                    Cancel
+                                </button>
                             </section>
+
                         )}
                     </>
                 )}
