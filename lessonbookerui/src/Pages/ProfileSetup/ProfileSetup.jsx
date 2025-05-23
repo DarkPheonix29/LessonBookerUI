@@ -19,6 +19,8 @@ const ProfileSetup = ({ onProfileComplete }) => {
         pickupAddress: '',
         dateOfBirth: '',
     });
+    const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
     const { email } = useParams();
     const navigate = useNavigate();
 
@@ -33,6 +35,8 @@ const ProfileSetup = ({ onProfileComplete }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
+        setError('');
         try {
             const formattedProfile = {
                 ...profile,
@@ -47,11 +51,18 @@ const ProfileSetup = ({ onProfileComplete }) => {
                 { headers: getAuthHeader() }
             );
             if (response.status === 201) {
-                if (onProfileComplete) onProfileComplete(); // <-- Notify parent
+                if (onProfileComplete) onProfileComplete();
                 navigate('/studentdashboard');
+            } else {
+                setError('Failed to create profile. Please try again.');
             }
         } catch (error) {
-            console.error('Error while creating profile:', error);
+            setError(
+                error.response?.data?.message ||
+                'Error while creating profile. Please try again.'
+            );
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -62,25 +73,62 @@ const ProfileSetup = ({ onProfileComplete }) => {
                 <form onSubmit={handleSubmit} className="profileSetupBox">
                     <div className="inputGroup">
                         <label>Display Name</label>
-                        <input type="text" name="displayName" value={profile.displayName} onChange={handleChange} required />
+                        <input
+                            type="text"
+                            name="displayName"
+                            value={profile.displayName}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
                     <div className="inputGroup">
                         <label>Phone Number</label>
-                        <input type="text" name="phoneNumber" value={profile.phoneNumber} onChange={handleChange} required />
+                        <input
+                            type="text"
+                            name="phoneNumber"
+                            value={profile.phoneNumber}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
                     <div className="inputGroup">
                         <label>Address</label>
-                        <input type="text" name="address" value={profile.address} onChange={handleChange} required />
+                        <input
+                            type="text"
+                            name="address"
+                            value={profile.address}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
                     <div className="inputGroup">
                         <label>Pickup Address</label>
-                        <input type="text" name="pickupAddress" value={profile.pickupAddress} onChange={handleChange} required />
+                        <input
+                            type="text"
+                            name="pickupAddress"
+                            value={profile.pickupAddress}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
                     <div className="inputGroup">
                         <label>Date of Birth</label>
-                        <input type="date" name="dateOfBirth" value={profile.dateOfBirth} onChange={handleChange} required />
+                        <input
+                            type="date"
+                            name="dateOfBirth"
+                            value={profile.dateOfBirth}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
-                    <button type="submit" className="profileSetupButton">Submit</button>
+                    {error && <p className="error">{error}</p>}
+                    <button
+                        type="submit"
+                        className="profileSetupButton"
+                        disabled={submitting}
+                    >
+                        {submitting ? "Submitting..." : "Submit"}
+                    </button>
                 </form>
             </div>
         </>
