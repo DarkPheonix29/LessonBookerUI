@@ -5,7 +5,7 @@ import Header from '../../Components/Header/Header';
 import "./Signup.css";
 import API_BASE_URL from "../../Components/API/API";
 
-const Signup = () => {
+const Signup = (fetchAndSetRole) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [registrationKey, setRegistrationKey] = useState('');
@@ -21,18 +21,20 @@ const Signup = () => {
                 registrationKey
             });
 
-            if (response.status === 200) {
-                const auth = getAuth();
-                await signInWithEmailAndPassword(auth, email, password);
-                const idToken = await auth.currentUser.getIdToken();
-                localStorage.setItem("idToken", idToken);
+            if (response.status === 200 && response.data.token) {
+                localStorage.setItem("idToken", response.data.token);
+
+                // Fetch and set the role in app state
+                if (fetchAndSetRole) {
+                    await fetchAndSetRole();
+                }
+
                 navigate(`/profilesetup/${email}`);
             }
         } catch (error) {
             setErrorMessage(error.response?.data?.message || 'Signup failed. Please try again.');
         }
     };
-
 
     return (
         <>

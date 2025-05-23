@@ -42,7 +42,7 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole }) => {
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login fetchAndSetRole={fetchAndSetRole} />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/signup" element={<Signup fetchAndSetRole={fetchAndSetRole} />} />
             <Route
                 path="/studentdashboard"
                 element={
