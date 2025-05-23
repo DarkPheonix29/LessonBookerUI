@@ -37,11 +37,15 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole }) => {
                 )
             ) {
                 navigate("/studentdashboard", { replace: true });
-            }
-
-            } else if (role === "instructor" && !["/instructordashboard", "/instructorcalendar"].includes(location.pathname)) {
+            } else if (
+                role === "instructor" &&
+                !["/instructordashboard", "/instructorcalendar"].includes(location.pathname)
+            ) {
                 navigate("/instructordashboard", { replace: true });
-            } else if (role === "admin" && location.pathname !== "/adminpanel") {
+            } else if (
+                role === "admin" &&
+                location.pathname !== "/adminpanel"
+            ) {
                 navigate("/adminpanel", { replace: true });
             }
         }
