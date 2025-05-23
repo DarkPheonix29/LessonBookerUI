@@ -30,11 +30,6 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete }) =>
             navigate("/", { replace: true });
         } else if (user) {
             if (
-                !profileComplete &&
-                !location.pathname.startsWith("/profilesetup/")
-            ) {
-                navigate(`/profilesetup/${user.email}`, { replace: true });
-            } else if (
                 role === "student" &&
                 !(
                     location.pathname === "/studentdashboard" ||
@@ -55,7 +50,7 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete }) =>
                 navigate("/adminpanel", { replace: true });
             }
         }
-    }, [user, role, profileComplete, loading, navigate, location.pathname]);
+    }, [user, role, loading, navigate, location.pathname]);
 
     return (
         <Routes>
@@ -136,7 +131,23 @@ const App = () => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setUser(user);
             if (user) {
-                await fetchAndSetRole(user.email);
+                const role = await fetchUserRole();
+                setRole(role);
+                const complete = await isProfileComplete(user.email);
+                setProfileComplete(complete);
+
+                // Initial redirect after login
+                if (role === "student") {
+                    if (complete) {
+                        window.location.replace("/studentdashboard");
+                    } else {
+                        window.location.replace(`/profilesetup/${user.email}`);
+                    }
+                } else if (role === "instructor") {
+                    window.location.replace("/instructordashboard");
+                } else if (role === "admin") {
+                    window.location.replace("/adminpanel");
+                }
             } else {
                 setRole(null);
                 setProfileComplete(false);
@@ -145,6 +156,7 @@ const App = () => {
         });
         return () => unsubscribe();
     }, [auth]);
+
 
     if (loading) return <div>Loading...</div>;
 
