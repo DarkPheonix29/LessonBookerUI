@@ -24,9 +24,20 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete, setP
     const location = useLocation();
 
     useEffect(() => {
-        if (loading) return;
+        console.log("ROUTER EFFECT:");
+        console.log("  user:", user);
+        console.log("  role:", role);
+        console.log("  profileComplete:", profileComplete);
+        console.log("  loading:", loading);
+        console.log("  location.pathname:", location.pathname);
+
+        if (loading) {
+            console.log("  Still loading, skipping navigation.");
+            return;
+        }
         const publicPaths = ["/", "/login", "/signup"];
         if (!user && !publicPaths.includes(location.pathname)) {
+            console.log("  No user and not on public path, navigating to /");
             navigate("/", { replace: true });
         } else if (user) {
             // Student: profile incomplete
@@ -35,6 +46,7 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete, setP
                 !profileComplete &&
                 !location.pathname.startsWith("/profilesetup/")
             ) {
+                console.log("  Student with incomplete profile, navigating to /profilesetup/:email");
                 navigate(`/profilesetup/${user.email}`, { replace: true });
             }
             // Student: profile complete
@@ -47,6 +59,7 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete, setP
                     location.pathname.startsWith("/profilesetup/")
                 )
             ) {
+                console.log("  Student with complete profile, navigating to /studentdashboard");
                 navigate("/studentdashboard", { replace: true });
             }
             // Instructor
@@ -54,6 +67,7 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete, setP
                 role === "instructor" &&
                 !["/instructordashboard", "/instructorcalendar"].includes(location.pathname)
             ) {
+                console.log("  Instructor, navigating to /instructordashboard");
                 navigate("/instructordashboard", { replace: true });
             }
             // Admin
@@ -61,7 +75,10 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete, setP
                 role === "admin" &&
                 location.pathname !== "/adminpanel"
             ) {
+                console.log("  Admin, navigating to /adminpanel");
                 navigate("/adminpanel", { replace: true });
+            } else {
+                console.log("  No navigation needed.");
             }
         }
     }, [user, role, profileComplete, loading, navigate, location.pathname]);
@@ -134,8 +151,10 @@ const App = () => {
             if (email) {
                 const complete = await isProfileComplete(email);
                 setProfileComplete(complete);
+                console.log("FETCHANDSETROLE: email:", email, "role:", role, "profileComplete:", complete);
             }
-        } catch {
+        } catch (err) {
+            console.log("FETCHANDSETROLE ERROR:", err);
             setRole(null);
             setProfileComplete(false);
         }
@@ -143,15 +162,18 @@ const App = () => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            console.log("AUTH STATE CHANGED: user:", user);
             setUser(user);
             if (user) {
                 const role = await fetchUserRole();
                 setRole(role);
                 const complete = await isProfileComplete(user.email);
                 setProfileComplete(complete);
+                console.log("AUTH STATE: email:", user.email, "role:", role, "profileComplete:", complete);
             } else {
                 setRole(null);
                 setProfileComplete(false);
+                console.log("AUTH STATE: No user, reset role and profileComplete.");
             }
             setLoading(false);
         });
