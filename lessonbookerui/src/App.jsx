@@ -29,8 +29,18 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete, setP
         if (!user && !publicPaths.includes(location.pathname)) {
             navigate("/", { replace: true });
         } else if (user) {
+            // Student: profile incomplete
             if (
                 role === "student" &&
+                !profileComplete &&
+                !location.pathname.startsWith("/profilesetup/")
+            ) {
+                navigate(`/profilesetup/${user.email}`, { replace: true });
+            }
+            // Student: profile complete
+            else if (
+                role === "student" &&
+                profileComplete &&
                 !(
                     location.pathname === "/studentdashboard" ||
                     location.pathname === "/studentcalendar" ||
@@ -38,19 +48,23 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole, profileComplete, setP
                 )
             ) {
                 navigate("/studentdashboard", { replace: true });
-            } else if (
+            }
+            // Instructor
+            else if (
                 role === "instructor" &&
                 !["/instructordashboard", "/instructorcalendar"].includes(location.pathname)
             ) {
                 navigate("/instructordashboard", { replace: true });
-            } else if (
+            }
+            // Admin
+            else if (
                 role === "admin" &&
                 location.pathname !== "/adminpanel"
             ) {
                 navigate("/adminpanel", { replace: true });
             }
         }
-    }, [user, role, loading, navigate, location.pathname]);
+    }, [user, role, profileComplete, loading, navigate, location.pathname]);
 
     return (
         <Routes>
@@ -111,7 +125,6 @@ const App = () => {
     const [profileComplete, setProfileComplete] = useState(null);
     const [loading, setLoading] = useState(true);
     const auth = getAuth();
-    const navigate = useNavigate ? useNavigate() : null; // for SPA navigation
 
     // This function can be called from Login.jsx after login
     const fetchAndSetRole = async (email) => {
@@ -136,19 +149,6 @@ const App = () => {
                 setRole(role);
                 const complete = await isProfileComplete(user.email);
                 setProfileComplete(complete);
-
-                // Initial redirect after login/signup
-                if (role === "student") {
-                    if (complete) {
-                        navigate("/studentdashboard", { replace: true });
-                    } else {
-                        navigate(`/profilesetup/${user.email}`, { replace: true });
-                    }
-                } else if (role === "instructor") {
-                    navigate("/instructordashboard", { replace: true });
-                } else if (role === "admin") {
-                    navigate("/adminpanel", { replace: true });
-                }
             } else {
                 setRole(null);
                 setProfileComplete(false);
