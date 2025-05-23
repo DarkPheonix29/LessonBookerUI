@@ -10,7 +10,8 @@ import InstructorCalendar from './Pages/InstructorCalendar/InstructorCalendar';
 import AdminPanel from './Pages/AdminPanel/AdminPanel';
 import { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { fetchUserRole, isProfileComplete } from "../src/Components/ProfileCheck";
+import { isProfileComplete } from "../src/Components/ProfileCheck";
+import { fetchUserRole } from "../src/Components/API/account"; 
 
 const ProtectedRoute = ({ user, role, allowedRoles, children }) => {
     if (!user) return <Login />;
