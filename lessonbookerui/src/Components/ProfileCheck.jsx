@@ -1,5 +1,5 @@
 import axios from "axios";
-import API_BASE_URL from "./API";
+import API_BASE_URL from "./API/API";
 
 export async function isProfileComplete(email) {
     try {
