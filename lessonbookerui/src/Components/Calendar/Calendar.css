@@ -189,19 +189,25 @@
 }
 
 .calendar-slot {
-    width: 110px; /* Set your desired width */
-    height: 60px; /* Set your desired height */
-    max-width: 110px; /* Prevent growing */
-    min-width: 110px; /* Prevent shrinking */
-    overflow: hidden; /* Hide overflow */
-    text-overflow: ellipsis; /* Show ... for overflow text */
-    white-space: nowrap; /* Prevent wrapping */
+    width: 110px;
+    max-width: 110px;
+    min-width: 110px;
+    text-overflow: ellipsis;
+    background-color: #fff;
+    white-space: nowrap;
+    text-align: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-sizing: border-box;
+    font-weight: 500;
+    height: 60px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+    position: relative;
 }
-
 
     .calendar-slot:hover {
         background-color: #f0faff;
