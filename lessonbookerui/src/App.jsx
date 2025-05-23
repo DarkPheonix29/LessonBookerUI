@@ -28,8 +28,17 @@ const AppRoutes = ({ user, role, loading, fetchAndSetRole }) => {
         if (!user && !publicPaths.includes(location.pathname)) {
             navigate("/", { replace: true });
         } else if (user) {
-            if (role === "student" && !["/studentdashboard", "/studentcalendar", "/profilesetup/:email"].includes(location.pathname)) {
+            if (
+                role === "student" &&
+                !(
+                    location.pathname === "/studentdashboard" ||
+                    location.pathname === "/studentcalendar" ||
+                    location.pathname.startsWith("/profilesetup/")
+                )
+            ) {
                 navigate("/studentdashboard", { replace: true });
+            }
+
             } else if (role === "instructor" && !["/instructordashboard", "/instructorcalendar"].includes(location.pathname)) {
                 navigate("/instructordashboard", { replace: true });
             } else if (role === "admin" && location.pathname !== "/adminpanel") {
