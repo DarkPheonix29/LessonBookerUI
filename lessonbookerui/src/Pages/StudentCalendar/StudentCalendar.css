@@ -1,5 +1,7 @@
 .student-calendar-root {
     color: #111;
+    width: 100vw;
+    box-sizing: border-box;
 }
 
     .student-calendar-root .text-[#6ce5ff] {
@@ -12,13 +14,17 @@
 
 @media (max-width: 600px) {
     .student-calendar-root {
-        padding: 8px;
+        padding: 4px;
+        width: 100vw;
+        min-width: 0;
+        overflow-x: hidden;
     }
 
         .student-calendar-root h1,
         .student-calendar-root h2 {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             word-break: break-word;
+            margin: 0 0 8px 0;
         }
 
         .student-calendar-root .calendar-container {
@@ -26,6 +32,8 @@
             width: 100vw;
             min-width: 0;
             max-width: 100vw;
+            border-radius: 0;
+            box-shadow: none;
             overflow-x: auto;
         }
 
@@ -36,18 +44,33 @@
         }
 
         .student-calendar-root .calendar-slot {
-            min-width: 60px;
-            max-width: 80px;
-            font-size: 12px;
+            min-width: 48px;
+            max-width: 70px;
+            font-size: 11px;
             padding: 2px;
         }
 
         .student-calendar-root .calendar-title {
             font-size: 1rem;
+            margin: 0 2px;
         }
 
         .student-calendar-root .calendar-controls {
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            padding: 6px 0;
+        }
+
+        .student-calendar-root .calendar-view-options {
+            gap: 4px;
+            margin-left: 0;
+        }
+
+        .student-calendar-root .view-button,
+        .student-calendar-root .today-button,
+        .student-calendar-root .nav-arrow {
+            font-size: 0.95rem;
+            padding: 6px 10px;
+            border-radius: 8px;
         }
 }
