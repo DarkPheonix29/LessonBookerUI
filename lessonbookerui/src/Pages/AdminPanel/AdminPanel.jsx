@@ -94,8 +94,10 @@ const AdminPanel = () => {
 
     // Handle profile update
     const updateProfile = async () => {
+        // Merge selectedStudent and profileData, profileData takes precedence
+        const fullProfile = { ...selectedStudent, ...profileData };
         try {
-            await axios.put(`${API_BASE_URL}/api/admin/update-profile`, profileData, {
+            await axios.put(`${API_BASE_URL}/api/admin/update-profile`, fullProfile, {
                 headers: getAuthHeader(),
             });
             setMessage("Profile updated successfully.");
@@ -105,6 +107,7 @@ const AdminPanel = () => {
             setMessage("Failed to update profile.");
         }
     };
+
 
     // Handle booking removal
     const removeBooking = async (bookingId) => {

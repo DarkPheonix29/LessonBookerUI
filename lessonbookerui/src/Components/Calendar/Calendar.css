@@ -182,10 +182,12 @@
     color: #444;
     font-size: 14px;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-start; /* Align to top */
+    justify-content: center; /* Center horizontally */
     font-weight: 500;
     border: 1px solid #e0e0e0;
+    padding-top: 4px; /* Add a little space from the top */
+    height: 100%;
 }
 
 .calendar-slot {
