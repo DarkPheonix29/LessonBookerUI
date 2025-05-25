@@ -158,6 +158,18 @@
     display: contents;
 }
 
+    .calendar-hour-row.current-hour {
+        background-color: #6ce5ff !important;
+    }
+
+        .calendar-hour-row.current-hour .calendar-time,
+        .calendar-hour-row.current-hour .calendar-slot {
+            background-color: #6ce5ff !important;
+            color: #fff !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+
 .calendar-time-header,
 .calendar-header-cell {
     background-color: #f7f7f7;
@@ -277,9 +289,13 @@
         border: none;
     }
 
+    .calendar-header-cell.today,
     .calendar-day.today {
-        background-color: #e0faff;
-        border-color: #6ce5ff;
+        background-color: #6ce5ff !important;
+        color: #fff !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
 .day-number {

@@ -2,7 +2,11 @@
 body {
     margin: 0;
     padding: 0;
-    min-height: 100vh;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
     background-color: #e0e0e0;
     font-family: 'Segoe UI', Arial, sans-serif;
 }
@@ -12,7 +16,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100vw;
+    width: 100%;
     height: 100vh;
 }
 
@@ -22,12 +26,13 @@ body {
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
-    max-width: 400px;
-    padding: 32px 28px;
+    max-width: 500px;
+    padding: 30px;
     background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-    color: #222;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 100px;
+    color: black;
 }
 
 /* Input Groups */
@@ -35,61 +40,33 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
     .inputGroup label {
-        color: #222;
-        font-size: 15px;
-        margin-bottom: 6px;
+        color: black;
+        font-size: 14px;
+        margin-bottom: 5px;
     }
 
     .inputGroup input {
-        padding: 11px 12px;
+        padding: 10px;
         font-size: 16px;
-        border: 1.5px solid #bdbdbd;
+        border: 1px solid #ccc;
         border-radius: 5px;
-        color: #222;
+        margin-top: 5px;
+        color: black;
         background-color: #fff;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        outline: none;
-        box-sizing: border-box;
     }
 
-        /* Autofill fix for Chrome, Edge, Safari */
-        .inputGroup input:-webkit-autofill,
-        .inputGroup input:-webkit-autofill:focus,
-        .inputGroup input:-webkit-autofill:hover,
-        .inputGroup input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
-            box-shadow: 0 0 0 1000px #fff inset !important;
-            -webkit-text-fill-color: #222 !important;
-            border: 1.5px solid #6ce5ff !important;
-            transition: background-color 5000s ease-in-out 0s;
-        }
-
-        /* Autofill fix for Firefox */
-        .inputGroup input:-moz-autofill {
-            box-shadow: 0 0 0 1000px #fff inset !important;
-            -moz-text-fill-color: #222 !important;
-            border: 1.5px solid #6ce5ff !important;
-        }
-
         .inputGroup input:focus {
+            outline: none;
             border-color: #6ce5ff;
-            box-shadow: 0 0 0 1px #6ce5ff33;
         }
 
 /* Error Message */
 .error {
-    color: #e53935;
-    font-size: 14px;
-    margin-top: 10px;
-}
-
-/* Info Message */
-.info {
-    color: #0077a6;
+    color: red;
     font-size: 14px;
     margin-top: 10px;
 }
@@ -100,31 +77,19 @@ body {
     font-size: 18px;
     background-color: transparent;
     border: 2px solid #6ce5ff;
-    padding: 10px 0;
+    padding: 10px 20px;
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
     margin-top: 10px;
     width: 100%;
     max-width: 250px;
     border-radius: 5px;
-    font-weight: 500;
 }
 
     .loginButton:hover {
         background-color: #6ce5ff;
         color: #fff;
     }
-
-/* Link Button (Forgot password) */
-.linkButton {
-    background: none;
-    border: none;
-    color: #0077a6;
-    cursor: pointer;
-    padding: 0;
-    text-decoration: underline;
-    font-size: 16px;
-}
 
 /* Signup Link */
 .registerLink {
@@ -135,7 +100,6 @@ body {
     .registerLink a {
         color: #6ce5ff;
         text-decoration: none;
-        font-weight: 500;
     }
 
         .registerLink a:hover {
@@ -143,14 +107,14 @@ body {
         }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 991px) {
     .loginBox {
-        max-width: 95vw;
-        padding: 18px 8px;
+        max-width: 90%;
+        padding: 20px;
     }
 
     .loginButton {
         font-size: 16px;
-        padding: 8px 0;
+        padding: 8px 16px;
     }
 }
