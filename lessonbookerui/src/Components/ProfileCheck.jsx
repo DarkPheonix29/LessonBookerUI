@@ -8,8 +8,6 @@ export async function isProfileComplete(email) {
             headers: { Authorization: `Bearer ${idToken}` }
         });
         const profile = res.data;
-        // Log for debugging
-        console.log("Profile data for", email, ":", profile);
 
         // Adjust these fields as needed for your app
         const complete = !!(
@@ -19,10 +17,8 @@ export async function isProfileComplete(email) {
             profile.pickupAddress &&
             profile.dateOfBirth
         );
-        console.log("Profile complete?", complete);
         return complete;
     } catch (err) {
-        console.log("Profile check error:", err);
         return false;
     }
 }
