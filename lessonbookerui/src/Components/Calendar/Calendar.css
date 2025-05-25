@@ -4,7 +4,7 @@
     padding: 20px;
     max-width: 1200px;
     margin: auto;
-    background-color: #ffffff;
+    background-color: #fff;
     border-radius: 20px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     overflow-x: auto;
@@ -33,13 +33,6 @@
     }
 
 /* === Header Section === */
-.calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
 .calendar-controls {
     display: flex;
     align-items: center;
@@ -52,13 +45,6 @@
     padding: 18px 24px;
     box-shadow: 0 2px 12px rgba(108,229,255,0.10);
 }
-
-    .calendar-controls h2 {
-        font-size: 24px;
-        font-weight: bold;
-        margin: 0;
-        color: #333;
-    }
 
 .today-button {
     background-color: #6ce5ff;
@@ -78,12 +64,6 @@
         background: #00cfff;
     }
 
-/* === Navigation Arrows === */
-.navigation-buttons {
-    display: flex;
-    gap: 8px;
-}
-
 .nav-arrow {
     background-color: #fff;
     border: 2px solid #6ce5ff;
@@ -102,7 +82,6 @@
         color: #fff;
     }
 
-/* === View Options === */
 .calendar-view-options {
     display: flex;
     gap: 10px;
@@ -158,18 +137,6 @@
     display: contents;
 }
 
-    .calendar-hour-row.current-hour {
-        background-color: #6ce5ff !important;
-    }
-
-        .calendar-hour-row.current-hour .calendar-time,
-        .calendar-hour-row.current-hour .calendar-slot {
-            background-color: #6ce5ff !important;
-            color: #fff !important;
-            border-radius: 0 !important;
-            border: none !important;
-        }
-
 .calendar-time-header,
 .calendar-header-cell {
     background-color: #f7f7f7;
@@ -183,9 +150,15 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-    .calendar-header-cell.today {
-        background-color: #e0e0e0;
-        border-radius: 8px;
+    /* === Current Day Highlight === */
+    .calendar-header-cell.today,
+    .calendar-day.today {
+        background-color: #f7f7f7 !important;
+        color: #00cfff !important;
+        border-radius: 0 !important;
+        border: 2px solid #6ce5ff !important;
+        box-shadow: none !important;
+        font-weight: bold;
     }
 
 /* === Time and Slots === */
@@ -194,11 +167,11 @@
     color: #444;
     font-size: 14px;
     display: flex;
-    align-items: flex-start; /* Align to top */
-    justify-content: center; /* Center horizontally */
+    align-items: flex-start;
+    justify-content: center;
     font-weight: 500;
     border: 1px solid #e0e0e0;
-    padding-top: 4px; /* Add a little space from the top */
+    padding-top: 4px;
     height: 100%;
 }
 
@@ -235,12 +208,22 @@
         background-color: #ffc7c7;
         color: #b00020;
         font-weight: bold;
-        /* pointer-events removed here! */
     }
-        /* Only students can't click booked slots */
+
         .calendar-slot.booked.unclickable {
             pointer-events: none;
         }
+
+    /* === Current Hour Slot Highlight === */
+    .calendar-slot.current-hour {
+        background-color: #fff !important;
+        color: #00cfff !important;
+        border: 2px solid #6ce5ff !important;
+        border-radius: 0 !important;
+        font-weight: bold;
+        z-index: 1;
+    }
+
 /* Info button always clickable */
 .booked-info-btn {
     position: absolute;
@@ -287,15 +270,6 @@
     .calendar-day.empty {
         background-color: transparent;
         border: none;
-    }
-
-    .calendar-header-cell.today,
-    .calendar-day.today {
-        background-color: #6ce5ff !important;
-        color: #fff !important;
-        border-radius: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
     }
 
 .day-number {
@@ -433,7 +407,7 @@
         grid-auto-rows: 28px;
         border-radius: 8px;
         font-size: 12px;
-        min-width: 600px; /* allow horizontal scroll */
+        min-width: 600px;
     }
 
         .calendar-grid.day-view {
@@ -492,4 +466,3 @@
         border-radius: 10px;
     }
 }
-

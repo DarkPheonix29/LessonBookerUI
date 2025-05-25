@@ -102,6 +102,24 @@ body {
             text-decoration: underline;
         }
 
+.password-strength {
+    margin-top: 4px;
+    font-size: 0.95em;
+}
+
+    .password-strength.weak {
+        color: #d32f2f;
+    }
+
+    .password-strength.medium {
+        color: #fbc02d;
+    }
+
+    .password-strength.strong {
+        color: #388e3c;
+    }
+
+
 /* Responsive */
 @media (max-width: 991px) {
     .signupBox {

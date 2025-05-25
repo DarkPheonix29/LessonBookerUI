@@ -500,11 +500,12 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                         isWithinInterval(end, { start: a.start, end: a.end })
                                 );
                             }
-
                             let className = "calendar-slot";
                             if (isBooked) className += " booked";
                             else if (isAvailable) className += " available";
                             if (isBooked && !isInstructor) className += " unclickable";
+                            if (hour === currentHour && isToday(day)) className += " current-hour";
+
 
                             return (
                                 <div
@@ -588,6 +589,8 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                         if (isBooked) className += " booked";
                         else if (isAvailable) className += " available";
                         if (isBooked && !isInstructor) className += " unclickable";
+                        if (hour === currentHour && isToday(selectedDate)) className += " current-hour";
+
 
                         return (
                             <div className={`calendar-hour-row ${hour === currentHour && isToday(selectedDate) ? "current-hour" : ""}`} key={hour}>
