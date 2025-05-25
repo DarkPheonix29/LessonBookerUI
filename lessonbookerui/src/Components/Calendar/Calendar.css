@@ -4,7 +4,7 @@
     padding: 20px;
     max-width: 1200px;
     margin: auto;
-    background-color: #fff;
+    background: #fff;
     border-radius: 20px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     overflow-x: auto;
@@ -173,7 +173,18 @@
     border: 1px solid #e0e0e0;
     padding-top: 4px;
     height: 100%;
+    transition: border 0.2s, color 0.2s;
 }
+
+    /* === Current Hour Highlight (only on hour label) === */
+    .calendar-time.current-hour {
+        background-color: #f9f9f9 !important;
+        color: #00cfff !important;
+        border: 2px solid #6ce5ff !important;
+        border-radius: 0 !important;
+        font-weight: bold;
+        z-index: 1;
+    }
 
 .calendar-slot {
     width: 110px;
@@ -213,16 +224,6 @@
         .calendar-slot.booked.unclickable {
             pointer-events: none;
         }
-
-    /* === Current Hour Slot Highlight === */
-    .calendar-slot.current-hour {
-        background-color: #fff !important;
-        color: #00cfff !important;
-        border: 2px solid #6ce5ff !important;
-        border-radius: 0 !important;
-        font-weight: bold;
-        z-index: 1;
-    }
 
 /* Info button always clickable */
 .booked-info-btn {

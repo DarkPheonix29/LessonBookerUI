@@ -483,10 +483,14 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                 {HOURS.map((hour) => (
                     <div
                         key={hour}
-                        className={`calendar-hour-row ${hour === currentHour && isToday(selectedDate) ? "current-hour" : ""}`}
-                        ref={hour === currentHour && isToday(selectedDate) ? currentHourRef : null}
+                        className="calendar-hour-row"
                     >
-                        <div className="calendar-time">{hour}:00</div>
+                        {/* Only the hour label gets the current-hour class */}
+                        <div
+                            className={`calendar-time${hour === currentHour && isToday(selectedDate) ? " current-hour" : ""}`}
+                        >
+                            {hour}:00
+                        </div>
                         {days.map((day) => {
                             const start = setHours(new Date(day), hour);
                             const end = new Date(start.getTime() + 60 * 60 * 1000);
@@ -504,8 +508,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                             if (isBooked) className += " booked";
                             else if (isAvailable) className += " available";
                             if (isBooked && !isInstructor) className += " unclickable";
-                            if (hour === currentHour && isToday(day)) className += " current-hour";
-
+                            // No current-hour class on slots!
 
                             return (
                                 <div
@@ -529,7 +532,6 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                                 setShowAvailabilityModal(true);
                                             }
                                         } else if (!isInstructor && isAvailable) {
-                                            // FIX: Only check for bookings by the current student
                                             const alreadyBooked = bookings.some(
                                                 b => b.studentEmail === studentEmail && isSameDayDateFns(b.start, start)
                                             );
@@ -589,12 +591,16 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                         if (isBooked) className += " booked";
                         else if (isAvailable) className += " available";
                         if (isBooked && !isInstructor) className += " unclickable";
-                        if (hour === currentHour && isToday(selectedDate)) className += " current-hour";
-
+                        // No current-hour class on slots!
 
                         return (
-                            <div className={`calendar-hour-row ${hour === currentHour && isToday(selectedDate) ? "current-hour" : ""}`} key={hour}>
-                                <div className="calendar-time">{hour}:00</div>
+                            <div className="calendar-hour-row" key={hour}>
+                                {/* Only the hour label gets the current-hour class */}
+                                <div
+                                    className={`calendar-time${hour === currentHour && isToday(selectedDate) ? " current-hour" : ""}`}
+                                >
+                                    {hour}:00
+                                </div>
                                 <div
                                     className={className}
                                     style={{ position: "relative" }}
@@ -615,7 +621,6 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                                 setShowAvailabilityModal(true);
                                             }
                                         } else if (!isInstructor && isAvailable) {
-                                            // FIX: Only check for bookings by the current student
                                             const alreadyBooked = bookings.some(
                                                 b => b.studentEmail === studentEmail && isSameDayDateFns(b.start, start)
                                             );
