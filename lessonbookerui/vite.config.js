@@ -7,9 +7,15 @@ export default defineConfig({
     server: {
         proxy: {
             '^/api/': {
-                target: 'https://your-cloud-run-service-xyz.a.run.app',
+                target: 'https://localhost:7012',
                 changeOrigin: true,
-                secure: true
+                secure: false // Set to false for local HTTP
+            },
+            '^/calendarHub': { // <-- Add this block
+                target: 'https://localhost:7012',
+                changeOrigin: true,
+                secure: false,
+                ws: true
             }
         }
     }

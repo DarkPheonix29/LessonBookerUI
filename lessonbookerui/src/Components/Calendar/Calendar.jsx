@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import * as signalR from "@microsoft/signalr";
 import {
     format,
     addDays,
@@ -51,64 +52,98 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
     const currentHourRef = useRef(null);
     const currentHour = new Date().getHours();
 
+    // --- SignalR connection and calendar data fetching ---
     useEffect(() => {
-        if (isInstructor) {
-            axios.get(`${API_BASE_URL}/api/availability/${instructorEmail}`, {
-                headers: getAuthHeader(),
-            })
-                .then(response => {
-                    const parsed = response.data.map(a => ({
-                        ...a,
-                        start: new Date(a.start),
-                        end: new Date(a.end)
-                    }));
-                    setAvailability(parsed);
-                })
-                .catch(error => console.error("Error fetching availability:", error));
+        let connection;
 
-            axios.get(`${API_BASE_URL}/api/booking/instructor/${instructorEmail}`, {
-                headers: getAuthHeader(),
-            })
-                .then(response => {
-                    const parsed = response.data.map(b => ({
-                        ...b,
-                        start: new Date(b.start),
-                        end: new Date(b.end),
-                        studentDisplayName: b.studentDisplayName || b.studentName || b.studentEmail,
-                        studentEmail: b.studentEmail
-                    }));
-                    setBookings(parsed);
+        // Function to fetch calendar data
+        const fetchCalendarData = () => {
+            if (isInstructor) {
+                axios.get(`${API_BASE_URL}/api/availability/${instructorEmail}`, {
+                    headers: getAuthHeader(),
                 })
-                .catch(error => console.error("Error fetching bookings:", error));
-        } else {
-            axios.get(`${API_BASE_URL}/api/availability/all-availability`, {
-                headers: getAuthHeader(),
-            })
-                .then(response => {
-                    const parsed = response.data.map(a => ({
-                        ...a,
-                        start: new Date(a.start),
-                        end: new Date(a.end)
-                    }));
-                    setAvailability(parsed);
-                })
-                .catch(error => console.error("Error fetching all instructors' availability:", error));
+                    .then(response => {
+                        const parsed = response.data.map(a => ({
+                            ...a,
+                            start: new Date(a.start),
+                            end: new Date(a.end)
+                        }));
+                        setAvailability(parsed);
+                    })
+                    .catch(error => console.error("Error fetching availability:", error));
 
-            axios.get(`${API_BASE_URL}/api/booking/all-bookings`, {
-                headers: getAuthHeader(),
-            })
-                .then(response => {
-                    const parsed = response.data.map(b => ({
-                        ...b,
-                        start: new Date(b.start),
-                        end: new Date(b.end),
-                        studentDisplayName: b.studentDisplayName || b.studentName || b.studentEmail,
-                        studentEmail: b.studentEmail
-                    }));
-                    setBookings(parsed);
+                axios.get(`${API_BASE_URL}/api/booking/instructor/${instructorEmail}`, {
+                    headers: getAuthHeader(),
                 })
-                .catch(error => console.error("Error fetching bookings:", error));
-        }
+                    .then(response => {
+                        const parsed = response.data.map(b => ({
+                            ...b,
+                            start: new Date(b.start),
+                            end: new Date(b.end),
+                            studentDisplayName: b.studentDisplayName || b.studentName || b.studentEmail,
+                            studentEmail: b.studentEmail
+                        }));
+                        setBookings(parsed);
+                    })
+                    .catch(error => console.error("Error fetching bookings:", error));
+            } else {
+                axios.get(`${API_BASE_URL}/api/availability/all-availability`, {
+                    headers: getAuthHeader(),
+                })
+                    .then(response => {
+                        const parsed = response.data.map(a => ({
+                            ...a,
+                            start: new Date(a.start),
+                            end: new Date(a.end)
+                        }));
+                        setAvailability(parsed);
+                    })
+                    .catch(error => console.error("Error fetching all instructors' availability:", error));
+
+                axios.get(`${API_BASE_URL}/api/booking/all-bookings`, {
+                    headers: getAuthHeader(),
+                })
+                    .then(response => {
+                        const parsed = response.data.map(b => ({
+                            ...b,
+                            start: new Date(b.start),
+                            end: new Date(b.end),
+                            studentDisplayName: b.studentDisplayName || b.studentName || b.studentEmail,
+                            studentEmail: b.studentEmail
+                        }));
+                        setBookings(parsed);
+                    })
+                    .catch(error => console.error("Error fetching bookings:", error));
+            }
+        };
+
+        fetchCalendarData(); // Initial fetch
+
+        // Setup SignalR connection
+        connection = new signalR.HubConnectionBuilder()
+            .withUrl(
+                import.meta.env.PROD
+                    ? `${API_BASE_URL}/calendarHub`
+                    : "/calendarHub"
+            )
+            .withAutomaticReconnect()
+            .build();
+
+        connection.start()
+            .then(() => {
+                connection.on("CalendarUpdated", () => {
+                    fetchCalendarData();
+                });
+            })
+            .catch(err => console.error("SignalR Connection Error: ", err));
+
+        // Cleanup on unmount
+        return () => {
+            if (connection) {
+                connection.stop();
+            }
+        };
+    // Only re-run if instructorEmail, studentEmail, or isInstructor changes
     }, [instructorEmail, studentEmail, isInstructor]);
 
     const addNewAvailability = (start, end) => {
