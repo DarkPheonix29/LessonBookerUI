@@ -32,12 +32,22 @@ const Signup = ({ fetchAndSetRole }) => {
     const [errorMessage, setErrorMessage] = useState('');
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
     const [passwordStrength, setPasswordStrength] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const navigate = useNavigate();
 
     const handlePasswordChange = (e) => {
         const pw = e.target.value;
         setPassword(pw);
-        setPasswordStrength(getPasswordStrength(pw));
+        const strength = getPasswordStrength(pw);
+        setPasswordStrength(strength);
+
+        // Show error immediately if password is weak
+        if (pw && strength === 'Weak') {
+            setPasswordError("Password is too weak.");
+        } else {
+            setPasswordError("");
+        }
+
         // Re-validate confirm password
         if (confirmPassword && pw !== confirmPassword) {
             setConfirmPasswordError("Passwords do not match");
@@ -64,7 +74,7 @@ const Signup = ({ fetchAndSetRole }) => {
             return;
         }
         if (passwordStrength === 'Weak') {
-            setErrorMessage("Password is too weak.");
+            setPasswordError("Password is too weak.");
             return;
         }
         try {
@@ -147,6 +157,9 @@ const Signup = ({ fetchAndSetRole }) => {
                             <div className={`password-strength ${passwordStrength.toLowerCase()}`}>
                                 Password strength: {passwordStrength}
                             </div>
+                        )}
+                        {passwordError && (
+                            <div className="error">{passwordError}</div>
                         )}
                     </div>
                     <div className="inputGroup">
