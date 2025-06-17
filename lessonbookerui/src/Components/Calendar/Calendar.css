@@ -230,6 +230,14 @@
             pointer-events: none;
         }
 
+    .calendar-slot.other-booked {
+        background: #e0e0e0 !important;
+        color: #b0b0b0 !important;
+        cursor: not-allowed !important;
+        pointer-events: none;
+        border: 1px solid #d0d0d0;
+    }
+
 /* Info button always clickable */
 .booked-info-btn {
     position: absolute;

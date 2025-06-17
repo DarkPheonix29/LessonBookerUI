@@ -4,6 +4,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import "./AdminPanel.css";
 import API_BASE_URL from "../../Components/API/API";
+import Calendar from "../../Components/Calendar/Calendar";
 
 // Helper to get the Authorization header
 const getAuthHeader = () => {
@@ -50,7 +51,7 @@ const AdminPanel = () => {
         }
     }, [activeTab]);
 
-    // Handle key generation
+    // After generating a key, fetch the keys and set the latest one
     const generateKey = async () => {
         try {
             await axios.post(`${API_BASE_URL}/api/admin/generate-key`, {}, {
@@ -60,6 +61,7 @@ const AdminPanel = () => {
                 headers: getAuthHeader(),
             });
             const keys = keysRes.data;
+            // Always show the last key in the list
             const latestKeyObj = keys && keys.length > 0 ? keys[keys.length - 1] : null;
             setNewKey(latestKeyObj ? latestKeyObj.key : "");
             setMessage("New registration key generated successfully.");
@@ -138,6 +140,12 @@ const AdminPanel = () => {
                         onClick={() => setActiveTab("bookings")}
                     >
                         Bookings
+                    </span>
+                    <span
+                        className={`admin-nav-item${activeTab === "calendar" ? " active" : ""}`}
+                        onClick={() => setActiveTab("calendar")}
+                    >
+                        Calendar
                     </span>
                 </div>
                 <button className="admin-btn logout-btn" onClick={handleLogout}>
@@ -259,6 +267,15 @@ const AdminPanel = () => {
                                     ))}
                                 </ul>
                             )}
+                        </div>
+                    </section>
+                )}
+
+                {activeTab === "calendar" && (
+                    <section className="admin-section">
+                        <h2>All Instructors' Calendar</h2>
+                        <div style={{ width: "100%", maxWidth: 932, margin: "0 auto" }}>
+                            <Calendar isInstructor={false} viewMode="full" />
                         </div>
                     </section>
                 )}

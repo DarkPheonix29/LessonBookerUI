@@ -68,6 +68,15 @@ const StudentDashboard = () => {
                                 : "No upcoming lessons"}
                         </span>
                     </p>
+                    {nextLesson && (
+                        <div style={{ marginTop: 8, fontSize: "1rem", color: "#222" }}>
+                            <b>Instructor:</b>{" "}
+                            {nextLesson.instructorDisplayName ||
+                                nextLesson.instructorName ||
+                                nextLesson.instructorEmail ||
+                                "Unknown"}
+                        </div>
+                    )}
                 </section>
                 <section className="mt-6 text-center">
                     <h2 className="text-xl font-semibold mb-2">Schedule your next lesson!</h2>

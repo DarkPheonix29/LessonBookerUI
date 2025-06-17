@@ -11,6 +11,10 @@ const Home = () => {
         navigate('/login');
     };
 
+    const handleSignupRedirect = () => {
+        navigate('/signup');
+    };
+
     return (
         <div className="homeContainer">
             <Header />
@@ -28,6 +32,9 @@ const Home = () => {
                 </p>
                 <button onClick={handleLoginRedirect} className="homeLoginButton">
                     Login
+                </button>
+                <button onClick={handleSignupRedirect} className="homeLoginButton" style={{ marginTop: 12 }}>
+                    Create Account
                 </button>
             </div>
         </div>

@@ -34,6 +34,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
     const [availability, setAvailability] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [bookingDuration, setBookingDuration] = useState(1);
+    const [repeatUntil, setRepeatUntil] = useState(null);
 
     // Modal state for instructor availability
     const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
@@ -299,14 +300,14 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
             });
             setBookedLessonDetails({
                 ...booking,
-                pickupAddress: res.data.pickupAddress || "Unknown",
+                phoneNumber: res.data.phoneNumber || "",
                 displayName: res.data.displayName || booking.studentDisplayName || booking.studentEmail
             });
         } catch (err) {
             setProfileError("Could not load student profile.");
             setBookedLessonDetails({
                 ...booking,
-                pickupAddress: "Unknown",
+                phoneNumber: "",
                 displayName: booking.studentDisplayName || booking.studentEmail
             });
         } finally {
@@ -325,7 +326,9 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                 ) : bookedLessonDetails ? (
                     <>
                         <p><b>Student:</b> {bookedLessonDetails.displayName}</p>
-                        <p><b>Pickup Address:</b> {bookedLessonDetails.pickupAddress}</p>
+                        {bookedLessonDetails.phoneNumber && (
+                            <p><b>Phone Number:</b> {bookedLessonDetails.phoneNumber}</p>
+                        )}
                         <p>
                             <b>Start:</b> {format(new Date(bookedLessonDetails.start), "PPpp")}
                             <br />
@@ -497,6 +500,23 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
 
     // BookedInfoButton REMOVED
 
+    const handleRemoveAllAvailabilityForDay = (day) => {
+        const slotsToRemove = availability.filter(a => isSameDay(a.start, day));
+        if (slotsToRemove.length === 0) return;
+        if (!window.confirm("Are you sure you want to remove all availability for this day?")) return;
+        Promise.all(
+            slotsToRemove.map(a =>
+                axios.delete(`${API_BASE_URL}/api/availability/${parseInt(a.availabilityId || a.id, 10)}`, {
+                    headers: getAuthHeader(),
+                })
+            )
+        ).then(() => {
+            setAvailability(prev => prev.filter(a => !isSameDay(a.start, day)));
+        }).catch(() => {
+            alert("Failed to remove all availability for this day.");
+        });
+    };
+
     const renderWeekView = () => {
         const start = startOfWeek(selectedDate, { weekStartsOn: 1 });
         const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
@@ -509,6 +529,10 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                         <div
                             key={day}
                             className={`calendar-header-cell ${isSameDay(day, new Date()) ? "today" : ""}`}
+                            onClick={() => {
+                                if (isInstructor) handleRemoveAllAvailabilityForDay(day);
+                            }}
+                            style={isInstructor ? { cursor: "pointer" } : {}}
                         >
                             {format(day, "EEE dd")}
                         </div>
@@ -531,6 +555,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                             const end = new Date(start.getTime() + 60 * 60 * 1000);
                             const booking = getBookingForSlot(start, end);
                             const isBooked = !!booking;
+                            const isBookedByOther = isBooked && !isInstructor && booking.studentEmail !== studentEmail;
                             let isAvailable = false;
                             if (!isBooked) {
                                 isAvailable = availability.some(
@@ -542,7 +567,8 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                             let className = "calendar-slot";
                             if (isBooked) className += " booked";
                             else if (isAvailable) className += " available";
-                            if (isBooked && !isInstructor) className += " unclickable";
+                            if (isBookedByOther) className += " unclickable other-booked";
+                            else if (isBooked && !isInstructor) className += " unclickable";
                             // No current-hour class on slots!
 
                             return (
@@ -551,6 +577,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                     className={className}
                                     style={{ position: "relative" }}
                                     onClick={() => {
+                                        if (isBookedByOther) return; // Non-pressable
                                         if (isBooked && isInstructor) {
                                             handleBookedSlotClick(booking);
                                             return;
@@ -579,15 +606,17 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                         }
                                     }}
                                 >
-                                    {isBooked
-                                        ? isInstructor
-                                            ? (booking.studentDisplayName || booking.studentEmail)
-                                            : "Booked"
-                                        : isAvailable
+                                    {isBookedByOther
+                                        ? "" // No text for slots booked by others
+                                        : isBooked
                                             ? isInstructor
-                                                ? "Available"
-                                                : ""
-                                            : ""}
+                                                ? (booking.displayName || booking.studentDisplayName || booking.studentName || booking.studentEmail)
+                                                : "Booked"
+                                            : isAvailable
+                                                ? isInstructor
+                                                    ? "Available"
+                                                    : ""
+                                                : ""}
                                 </div>
                             );
                         })}
@@ -613,6 +642,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                         const end = new Date(start.getTime() + 60 * 60 * 1000);
                         const booking = getBookingForSlot(start, end);
                         const isBooked = !!booking;
+                        const isBookedByOther = isBooked && !isInstructor && booking.studentEmail !== studentEmail;
                         let isAvailable = false;
                         if (!isBooked) {
                             isAvailable = availability.some(
@@ -625,7 +655,8 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                         let className = "calendar-slot";
                         if (isBooked) className += " booked";
                         else if (isAvailable) className += " available";
-                        if (isBooked && !isInstructor) className += " unclickable";
+                        if (isBookedByOther) className += " unclickable other-booked";
+                        else if (isBooked && !isInstructor) className += " unclickable";
                         // No current-hour class on slots!
 
                         return (
@@ -640,6 +671,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                     className={className}
                                     style={{ position: "relative" }}
                                     onClick={() => {
+                                        if (isBookedByOther) return; // Non-pressable
                                         if (isBooked && isInstructor) {
                                             handleBookedSlotClick(booking);
                                             return;
@@ -668,15 +700,17 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                         }
                                     }}
                                 >
-                                    {isBooked
-                                        ? isInstructor
-                                            ? (booking.studentDisplayName || booking.studentEmail)
-                                            : "Booked"
-                                        : isAvailable
+                                    {isBookedByOther
+                                        ? "" // No text for slots booked by others
+                                        : isBooked
                                             ? isInstructor
-                                                ? "Available"
-                                                : ""
-                                            : ""}
+                                                ? (booking.displayName || booking.studentDisplayName || booking.studentName || booking.studentEmail)
+                                                : "Booked"
+                                            : isAvailable
+                                                ? isInstructor
+                                                    ? "Available"
+                                                    : ""
+                                                : ""}
                                 </div>
                             </div>
                         );
@@ -719,7 +753,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                             {format(b.start, "HH:mm")} - {format(b.end, "HH:mm")}
                                             {isInstructor && (
                                                 <div style={{ fontSize: "11px", color: "#0077a6" }}>
-                                                    {b.studentDisplayName || b.studentEmail}
+                                                    {b.displayName || b.studentDisplayName || b.studentName || b.studentEmail}
                                                 </div>
                                             )}
                                         </div>

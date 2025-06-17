@@ -184,6 +184,11 @@ const Signup = ({ fetchAndSetRole }) => {
                             required
                         />
                     </div>
+                    {passwordError && (
+                        <div className="error" style={{ fontWeight: "bold", color: "#d32f2f", marginBottom: 8 }}>
+                            {passwordError}
+                        </div>
+                    )}
                     {errorMessage && <p className="error">{errorMessage}</p>}
                     <button
                         type="submit"
