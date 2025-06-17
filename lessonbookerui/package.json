@@ -12,6 +12,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@microsoft/signalr": "^8.0.7",
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",
     "firebase": "^11.8.1",
