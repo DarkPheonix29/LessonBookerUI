@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as signalR from "@microsoft/signalr";
 import {
@@ -197,11 +197,15 @@ export default function DrivingSchoolCalendar({
             return;
         }
 
-        // Add slots for each day until repeatUntil (inclusive)
+        // Repeat only on the same weekday as 'start'
         let current = new Date(start);
         let currentEnd = new Date(end);
+        const targetDay = current.getDay(); // 0=Sunday, 1=Monday, etc.
+
         while (current <= repeatUntil) {
-            postAvailabilitySlot(new Date(current), new Date(currentEnd));
+            if (current.getDay() === targetDay) {
+                postAvailabilitySlot(new Date(current), new Date(currentEnd));
+            }
             // Move to next day
             current.setDate(current.getDate() + 1);
             currentEnd.setDate(currentEnd.getDate() + 1);
@@ -357,7 +361,11 @@ export default function DrivingSchoolCalendar({
         setProfileError(null);
         setShowBookedModal(true);
         try {
-            const res = await axios.get(`${API_BASE_URL}/api/profile/${booking.studentEmail}`, {
+            const email = booking.studentEmail;
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                throw new Error("Invalid email address.");
+            }
+            const res = await axios.get(`${API_BASE_URL}/api/profile/${encodeURIComponent(email)}`, {
                 headers: getAuthHeader(),
             });
             setBookedLessonDetails({
@@ -721,7 +729,7 @@ export default function DrivingSchoolCalendar({
                 </div>
 
                 <div className="calendar-scrollable">
-                    {HOURS.map((hour) => {
+                    {HALF_HOURS.map((hour) => {
                         const start = setHours(startOfDay, hour);
                         const end = new Date(start.getTime() + 60 * 60 * 1000);
                         const booking = getBookingForSlot(start, end);
