@@ -6,6 +6,7 @@ import "./AdminPanel.css";
 import API_BASE_URL from "../../Components/API/API";
 import Calendar from "../../Components/Calendar/Calendar";
 
+
 // Helper to get the Authorization header
 const getAuthHeader = () => {
     const idToken = localStorage.getItem("idToken");
@@ -54,16 +55,12 @@ const AdminPanel = () => {
     // After generating a key, fetch the keys and set the latest one
     const generateKey = async () => {
         try {
-            await axios.post(`${API_BASE_URL}/api/admin/generate-key`, {}, {
+            // The POST should return the new key object
+            const res = await axios.post(`${API_BASE_URL}/api/admin/generate-key`, {}, {
                 headers: getAuthHeader(),
             });
-            const keysRes = await axios.get(`${API_BASE_URL}/api/admin/keys`, {
-                headers: getAuthHeader(),
-            });
-            const keys = keysRes.data;
-            // Always show the last key in the list
-            const latestKeyObj = keys && keys.length > 0 ? keys[keys.length - 1] : null;
-            setNewKey(latestKeyObj ? latestKeyObj.key : "");
+            // Use the key from the response directly
+            setNewKey(res.data.key || res.data.registrationKey || "");
             setMessage("New registration key generated successfully.");
         } catch {
             setMessage("Failed to generate key.");
@@ -274,8 +271,8 @@ const AdminPanel = () => {
                 {activeTab === "calendar" && (
                     <section className="admin-section">
                         <h2>All Instructors' Calendar</h2>
-                        <div style={{ width: "100%", maxWidth: 932, margin: "0 auto" }}>
-                            <Calendar isInstructor={false} viewMode="full" />
+                        <div style={{ width: "100%", maxWidth: 1400, margin: "0 auto" }}>
+                            <Calendar isAdmin={true} />
                         </div>
                     </section>
                 )}

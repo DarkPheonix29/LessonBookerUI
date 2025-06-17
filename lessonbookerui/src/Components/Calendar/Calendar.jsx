@@ -15,12 +15,13 @@ import {
     endOfMonth,
     isToday,
     isSameDay,
-    isSameDay as isSameDayDateFns
+    isSameDay as isSameDayDateFns,
+    startOfDay // <-- Add this line
 } from "date-fns";
 import "./Calendar.css";
 import API_BASE_URL from "../../Components/API/API";
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const HALF_HOURS = Array.from({ length: 48 }, (_, i) => i * 30); // 0, 30, 60, ..., 1410
 
 // Helper to get the Authorization header
 const getAuthHeader = () => {
@@ -28,13 +29,22 @@ const getAuthHeader = () => {
     return idToken ? { Authorization: `Bearer ${idToken}` } : {};
 };
 
-export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = "full", instructorEmail, studentEmail }) {
+export default function DrivingSchoolCalendar({
+    isInstructor = true,
+    isAdmin = false, // <-- add this
+    viewMode = "full",
+    instructorEmail,
+    studentEmail
+}) {
     const [currentView, setCurrentView] = useState("week");
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [availability, setAvailability] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [bookingDuration, setBookingDuration] = useState(1);
     const [repeatUntil, setRepeatUntil] = useState(null);
+    const [studentProfiles, setStudentProfiles] = useState({});
+    const [instructors, setInstructors] = useState([]);
+    const [selectedInstructor, setSelectedInstructor] = useState("all");
 
     // Modal state for instructor availability
     const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
@@ -59,7 +69,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
 
         // Function to fetch calendar data
         const fetchCalendarData = () => {
-            if (isInstructor) {
+            if (isInstructor && !isAdmin) {
                 axios.get(`${API_BASE_URL}/api/availability/${instructorEmail}`, {
                     headers: getAuthHeader(),
                 })
@@ -98,6 +108,10 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                             end: new Date(a.end)
                         }));
                         setAvailability(parsed);
+                        const uniqueInstructors = Array.from(
+                            new Set(parsed.map(a => a.instructorEmail))
+                        );
+                        setInstructors(uniqueInstructors);
                     })
                     .catch(error => console.error("Error fetching all instructors' availability:", error));
 
@@ -144,8 +158,33 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                 connection.stop();
             }
         };
-    // Only re-run if instructorEmail, studentEmail, or isInstructor changes
-    }, [instructorEmail, studentEmail, isInstructor]);
+    // Only re-run if instructorEmail, studentEmail, isInstructor, or selectedInstructor changes
+    }, [instructorEmail, studentEmail, isInstructor, selectedInstructor]);
+
+    useEffect(() => {
+        // Find all unique student emails in bookings
+        const emails = Array.from(new Set(bookings.map(b => b.studentEmail)));
+        // Filter out emails we already have
+        const missing = emails.filter(email => !studentProfiles[email]);
+        if (missing.length === 0) return;
+
+        // Fetch all missing profiles in parallel
+        Promise.all(
+            missing.map(email =>
+                axios.get(`${API_BASE_URL}/api/profile/${email}`, { headers: getAuthHeader() })
+                    .then(res => ({ email, displayName: res.data.displayName || "" }))
+                    .catch(() => ({ email, displayName: "" }))
+            )
+        ).then(results => {
+            setStudentProfiles(prev => {
+                const updated = { ...prev };
+                results.forEach(({ email, displayName }) => {
+                    updated[email] = displayName;
+                });
+                return updated;
+            });
+        });
+    }, [bookings]);
 
     const addNewAvailability = (start, end) => {
         const newAvailability = {
@@ -230,8 +269,8 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
     };
 
     const addBooking = (start, durationHours) => {
-        if (![1, 2].includes(durationHours)) {
-            alert("You can only book a lesson for 1 or 2 hours.");
+        if (![1, 1.5].includes(durationHours)) {
+            alert("You can only book a lesson for 1 or 1.5 hours.");
             return;
         }
 
@@ -301,14 +340,16 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
             setBookedLessonDetails({
                 ...booking,
                 phoneNumber: res.data.phoneNumber || "",
-                displayName: res.data.displayName || booking.studentDisplayName || booking.studentEmail
+                displayName: res.data.displayName || booking.studentDisplayName || booking.studentEmail,
+                address: res.data.address || res.data.pickupAddress || "" // Add this line
             });
         } catch (err) {
             setProfileError("Could not load student profile.");
             setBookedLessonDetails({
                 ...booking,
                 phoneNumber: "",
-                displayName: booking.studentDisplayName || booking.studentEmail
+                displayName: booking.studentDisplayName || booking.studentEmail,
+                address: ""
             });
         } finally {
             setProfileLoading(false);
@@ -328,6 +369,9 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                         <p><b>Student:</b> {bookedLessonDetails.displayName}</p>
                         {bookedLessonDetails.phoneNumber && (
                             <p><b>Phone Number:</b> {bookedLessonDetails.phoneNumber}</p>
+                        )}
+                        {bookedLessonDetails.address && (
+                            <p><b>Pickup Address:</b> {bookedLessonDetails.address}</p>
                         )}
                         <p>
                             <b>Start:</b> {format(new Date(bookedLessonDetails.start), "PPpp")}
@@ -472,12 +516,12 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                         className="view-button"
                         style={{ color: "#111" }}
                         onClick={() => {
-                            addBooking(bookingStart, 2);
+                            addBooking(bookingStart, 1.5);
                             setShowBookingModal(false);
                             setBookingStart(null);
                         }}
                     >
-                        2 Hours
+                        1.5 Hours
                     </button>
                 </div>
                 <button
@@ -496,9 +540,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
 
     // Helper: get the booking for a slot if it exists
     const getBookingForSlot = (start, end) =>
-        bookings.find(b => areIntervalsOverlapping({ start, end }, { start: b.start, end: b.end }));
-
-    // BookedInfoButton REMOVED
+        filteredBookings.find(b => areIntervalsOverlapping({ start, end }, { start: b.start, end: b.end }));
 
     const handleRemoveAllAvailabilityForDay = (day) => {
         const slotsToRemove = availability.filter(a => isSameDay(a.start, day));
@@ -530,98 +572,102 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                             key={day}
                             className={`calendar-header-cell ${isSameDay(day, new Date()) ? "today" : ""}`}
                             onClick={() => {
-                                if (isInstructor) handleRemoveAllAvailabilityForDay(day);
+                                if (isInstructor || isAdmin) handleRemoveAllAvailabilityForDay(day);
                             }}
-                            style={isInstructor ? { cursor: "pointer" } : {}}
+                            style={isInstructor || isAdmin ? { cursor: "pointer" } : {}}
                         >
                             {format(day, "EEE dd")}
                         </div>
                     ))}
                 </div>
 
-                {HOURS.map((hour) => (
-                    <div
-                        key={hour}
-                        className="calendar-hour-row"
-                    >
-                        {/* Only the hour label gets the current-hour class */}
+                {HALF_HOURS.map((minuteOfDay) => {
+                    const hour = Math.floor(minuteOfDay / 60);
+                    const minute = minuteOfDay % 60;
+                    const isHourRow = minute === 0;
+                    return (
                         <div
-                            className={`calendar-time${hour === currentHour && isToday(selectedDate) ? " current-hour" : ""}`}
+                            className={`calendar-hour-row${isHourRow ? " hour-separator" : " halfhour-separator"}`}
+                            key={minuteOfDay}
                         >
-                            {hour}:00
-                        </div>
-                        {days.map((day) => {
-                            const start = setHours(new Date(day), hour);
-                            const end = new Date(start.getTime() + 60 * 60 * 1000);
-                            const booking = getBookingForSlot(start, end);
-                            const isBooked = !!booking;
-                            const isBookedByOther = isBooked && !isInstructor && booking.studentEmail !== studentEmail;
-                            let isAvailable = false;
-                            if (!isBooked) {
-                                isAvailable = availability.some(
-                                    a =>
-                                        isWithinInterval(start, { start: a.start, end: a.end }) &&
-                                        isWithinInterval(end, { start: a.start, end: a.end })
-                                );
-                            }
-                            let className = "calendar-slot";
-                            if (isBooked) className += " booked";
-                            else if (isAvailable) className += " available";
-                            if (isBookedByOther) className += " unclickable other-booked";
-                            else if (isBooked && !isInstructor) className += " unclickable";
-                            // No current-hour class on slots!
+                            <div
+                                className={`calendar-time${hour === currentHour && minute === 0 && isToday(selectedDate) ? " current-hour" : ""}`}
+                            >
+                                {hour}:{minute === 0 ? "00" : "30"}
+                            </div>
+                            {days.map((day) => {
+                                const slotStart = new Date(day);
+                                slotStart.setHours(hour, minute, 0, 0);
+                                const slotEnd = new Date(slotStart.getTime() + 30 * 60 * 1000);
+                                const booking = getBookingForSlot(slotStart, slotEnd);
+                                const isBooked = !!booking;
+                                const isBookedByOther = isBooked && !isInstructor && booking.studentEmail !== studentEmail;
+                                let isAvailable = false;
+                                if (!isBooked) {
+                                    isAvailable = filteredAvailability.some(
+                                        a =>
+                                            isWithinInterval(slotStart, { start: a.start, end: a.end }) &&
+                                            isWithinInterval(slotEnd, { start: a.start, end: a.end })
+                                    );
+                                }
+                                let className = "calendar-slot";
+                                if (isBooked) className += " booked";
+                                else if (isAvailable) className += " available";
+                                if (isBookedByOther) className += " unclickable other-booked";
+                                else if (isBooked && !isInstructor) className += " unclickable";
 
-                            return (
-                                <div
-                                    key={`${day}-${hour}`}
-                                    className={className}
-                                    style={{ position: "relative" }}
-                                    onClick={() => {
-                                        if (isBookedByOther) return; // Non-pressable
-                                        if (isBooked && isInstructor) {
-                                            handleBookedSlotClick(booking);
-                                            return;
-                                        }
-                                        if (isInstructor && !isBooked) {
-                                            const containing = availability.find(a =>
-                                                isWithinInterval(start, { start: a.start, end: a.end }) &&
-                                                isWithinInterval(end, { start: a.start, end: a.end })
-                                            );
-                                            if (containing) {
-                                                removeAvailabilityHour(start, end);
-                                            } else {
-                                                setAvailabilityStart(start);
-                                                setShowAvailabilityModal(true);
-                                            }
-                                        } else if (!isInstructor && isAvailable) {
-                                            const alreadyBooked = bookings.some(
-                                                b => b.studentEmail === studentEmail && isSameDayDateFns(b.start, start)
-                                            );
-                                            if (alreadyBooked) {
-                                                alert("You can only book one lesson per day.");
+                                return (
+                                    <div
+                                        key={`${day}-${hour}-${minute}`}
+                                        className={className}
+                                        style={{ position: "relative" }}
+                                        onClick={() => {
+                                            if (isBookedByOther) return;
+                                            if (isBooked && isInstructor) {
+                                                handleBookedSlotClick(booking);
                                                 return;
                                             }
-                                            setBookingStart(start);
-                                            setShowBookingModal(true);
-                                        }
-                                    }}
-                                >
-                                    {isBookedByOther
-                                        ? "" // No text for slots booked by others
-                                        : isBooked
-                                            ? isInstructor
-                                                ? (booking.displayName || booking.studentDisplayName || booking.studentName || booking.studentEmail)
-                                                : "Booked"
-                                            : isAvailable
-                                                ? isInstructor
-                                                    ? "Available"
-                                                    : ""
-                                                : ""}
-                                </div>
-                            );
-                        })}
-                    </div>
-                ))}
+                                            if ((isInstructor || isAdmin) && !isBooked) {
+                                                const containing = availability.find(a =>
+                                                    isWithinInterval(slotStart, { start: a.start, end: a.end }) &&
+                                                    isWithinInterval(slotEnd, { start: a.start, end: a.end })
+                                                );
+                                                if (containing) {
+                                                    removeAvailabilityHour(slotStart, slotEnd);
+                                                } else {
+                                                    setAvailabilityStart(slotStart);
+                                                    setShowAvailabilityModal(true);
+                                                }
+                                            } else if (!isInstructor && isAvailable) {
+                                                const alreadyBooked = bookings.some(
+                                                    b => b.studentEmail === studentEmail && isSameDayDateFns(b.start, slotStart)
+                                                );
+                                                if (alreadyBooked) {
+                                                    alert("You can only book one lesson per day.");
+                                                    return;
+                                                }
+                                                setBookingStart(slotStart);
+                                                setShowBookingModal(true);
+                                            }
+                                        }}
+                                    >
+                                        {isBookedByOther
+                                            ? ""
+                                            : isBooked
+                                                ? (isInstructor || isAdmin)
+                                                    ? (studentProfiles[booking.studentEmail] || booking.displayName || booking.studentDisplayName || booking.studentName || booking.studentEmail)
+                                                    : "Booked"
+                                                : isAvailable
+                                                    ? (isInstructor || isAdmin)
+                                                        ? "Available"
+                                                        : ""
+                                                    : ""}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    );
+                })}
             </div>
         );
     };
@@ -645,7 +691,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                         const isBookedByOther = isBooked && !isInstructor && booking.studentEmail !== studentEmail;
                         let isAvailable = false;
                         if (!isBooked) {
-                            isAvailable = availability.some(
+                            isAvailable = filteredAvailability.some(
                                 a =>
                                     isWithinInterval(start, { start: a.start, end: a.end }) &&
                                     isWithinInterval(end, { start: a.start, end: a.end })
@@ -676,7 +722,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                             handleBookedSlotClick(booking);
                                             return;
                                         }
-                                        if (isInstructor && !isBooked) {
+                                        if ((isInstructor || isAdmin) && !isBooked) {
                                             const containing = availability.find(a =>
                                                 isWithinInterval(start, { start: a.start, end: a.end }) &&
                                                 isWithinInterval(end, { start: a.start, end: a.end })
@@ -704,7 +750,7 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                                         ? "" // No text for slots booked by others
                                         : isBooked
                                             ? isInstructor
-                                                ? (booking.displayName || booking.studentDisplayName || booking.studentName || booking.studentEmail)
+                                                ? (studentProfiles[booking.studentEmail] || booking.displayName || booking.studentDisplayName || booking.studentName || booking.studentEmail)
                                                 : "Booked"
                                             : isAvailable
                                                 ? isInstructor
@@ -770,6 +816,15 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
         );
     };
 
+    // Before rendering, filter availability and bookings if needed
+    const filteredAvailability = selectedInstructor === "all"
+        ? availability
+        : availability.filter(a => a.instructorEmail === selectedInstructor);
+
+    const filteredBookings = selectedInstructor === "all"
+        ? bookings
+        : bookings.filter(b => b.instructorEmail === selectedInstructor);
+
     return (
         <div className="calendar-container">
             <div className="calendar-controls">
@@ -796,6 +851,24 @@ export default function DrivingSchoolCalendar({ isInstructor = true, viewMode = 
                     */}
                 </div>
             </div>
+
+            {(!isInstructor || isAdmin) && instructors.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                    <label>
+                        <b>Filter by Instructor: </b>
+                        <select
+                            value={selectedInstructor}
+                            onChange={e => setSelectedInstructor(e.target.value)}
+                            style={{ marginLeft: 8, padding: "4px 8px", borderRadius: 6, border: "1px solid #6ce5ff" }}
+                        >
+                            <option value="all">All Instructors</option>
+                            {instructors.map(email => (
+                                <option key={email} value={email}>{email}</option>
+                            ))}
+                        </select>
+                    </label>
+                </div>
+            )}
 
             {showAvailabilityModal && renderAvailabilityModal()}
             {showBookingModal && renderBookingModal()}

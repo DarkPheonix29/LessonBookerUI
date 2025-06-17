@@ -30,7 +30,15 @@ const ProfileSetup = ({ onProfileComplete }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setProfile((prev) => ({ ...prev, [name]: value }));
+        if (name === "address") {
+            setProfile((prev) => ({
+                ...prev,
+                address: value,
+                pickupAddress: value, // keep pickupAddress in sync
+            }));
+        } else {
+            setProfile((prev) => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -97,16 +105,6 @@ const ProfileSetup = ({ onProfileComplete }) => {
                             type="text"
                             name="address"
                             value={profile.address}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                    <div className="inputGroup">
-                        <label>Pickup Address</label>
-                        <input
-                            type="text"
-                            name="pickupAddress"
-                            value={profile.pickupAddress}
                             onChange={handleChange}
                             required
                         />

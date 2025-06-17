@@ -209,6 +209,10 @@
     border: 1px solid #e0e0e0;
     overflow: hidden;
     position: relative;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
 }
 
     .calendar-slot:hover {
@@ -479,4 +483,24 @@
         padding: 18px 6px;
         border-radius: 10px;
     }
+}
+
+/* Thicker, darker line for each hour */
+.calendar-hour-row.hour-separator {
+    border-top: 2.5px solid #6ce5ff;
+    /* visually connect blocks by removing bottom border if needed */
+    /* border-bottom: none; */
+    background-clip: padding-box;
+}
+
+/* Lighter line for each half-hour */
+.calendar-hour-row.halfhour-separator {
+    border-top: 1px solid #e0e0e0;
+    /* border-bottom: none; */
+    background-clip: padding-box;
+}
+
+/* Remove border from the first row to avoid double border at the top */
+.calendar-hour-row:first-of-type {
+    border-top: none !important;
 }
