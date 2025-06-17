@@ -9,16 +9,27 @@ import { isProfileComplete } from "../../Components/ProfileCheck";
 
 function getPasswordStrength(password) {
     if (!password) return '';
+    if (password.length < 6) return 'Weak';
 
-    const length = password.length;
     const hasUpper = /[A-Z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
     const hasSpecial = /[^A-Za-z0-9]/.test(password);
 
-    if (length < 6) return 'Weak';
-    if (length >= 10 && hasUpper && hasNumber && hasSpecial) return 'Strong';
-    if (length >= 8 && hasUpper && hasNumber) return 'Medium';
+    if (password.length >= 10 && hasUpper && hasNumber && hasSpecial) return 'Strong';
+    if (password.length >= 8 && hasUpper && hasNumber) return 'Medium';
     return 'Weak';
+}
+
+function validateSignup(password, confirmPassword, passwordStrength, setConfirmPasswordError, setPasswordError) {
+    if (password.localeCompare(confirmPassword) !== 0) {
+        setConfirmPasswordError("Passwords do not match");
+        return false;
+    }
+    if (passwordStrength === 'Weak') {
+        setPasswordError("Password is too weak.");
+        return false;
+    }
+    return true;
 }
 
 const Signup = ({ fetchAndSetRole }) => {
@@ -56,7 +67,7 @@ const Signup = ({ fetchAndSetRole }) => {
     const handleConfirmPasswordChange = (e) => {
         const cpw = e.target.value;
         setConfirmPassword(cpw);
-        if (password !== cpw) {
+        if (password.localeCompare(cpw) !== 0) {
             setConfirmPasswordError("Passwords do not match");
         } else {
             setConfirmPasswordError("");
@@ -107,12 +118,7 @@ const Signup = ({ fetchAndSetRole }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMessage('');
-        if (password !== confirmPassword) {
-            setConfirmPasswordError("Passwords do not match");
-            return;
-        }
-        if (passwordStrength === 'Weak') {
-            setPasswordError("Password is too weak.");
+        if (!validateSignup(password, confirmPassword, passwordStrength, setConfirmPasswordError, setPasswordError)) {
             return;
         }
         try {
