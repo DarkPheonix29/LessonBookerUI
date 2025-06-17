@@ -22,37 +22,41 @@ const ProtectedRoute = ({ user, role, allowedRoles, children }) => {
 // Add this helper function above AppRoutes
 function handleNavigation({ user, role, profileComplete, loading, location, navigate }) {
     if (loading) return;
+
     const publicPaths = ["/", "/login", "/signup"];
-    if (!user && !publicPaths.includes(location.pathname)) {
-        navigate("/", { replace: true });
+    const path = location.pathname;
+
+    // Not logged in: only allow public paths
+    if (!user) {
+        if (!publicPaths.includes(path)) {
+            navigate("/", { replace: true });
+        }
         return;
     }
-    if (!user) return;
 
-    if (
-        role === "student" &&
-        !profileComplete &&
-        !location.pathname.startsWith("/profilesetup/")
-    ) {
-        navigate(`/profilesetup/${user.email}`, { replace: true });
-    } else if (
-        role === "student" &&
-        profileComplete &&
-        !(
-            location.pathname === "/studentdashboard" ||
-            location.pathname === "/studentcalendar"
-        )
-    ) {
-        navigate("/studentdashboard", { replace: true });
-    } else if (
-        role === "instructor" &&
-        !["/instructordashboard", "/instructorcalendar"].includes(location.pathname)
-    ) {
-        navigate("/instructordashboard", { replace: true });
-    } else if (
-        role === "admin" &&
-        location.pathname !== "/adminpanel"
-    ) {
+    // Student logic
+    if (role === "student") {
+        if (!profileComplete && !path.startsWith("/profilesetup/")) {
+            navigate(`/profilesetup/${user.email}`, { replace: true });
+            return;
+        }
+        if (profileComplete && !["/studentdashboard", "/studentcalendar"].includes(path)) {
+            navigate("/studentdashboard", { replace: true });
+            return;
+        }
+        return;
+    }
+
+    // Instructor logic
+    if (role === "instructor") {
+        if (!["/instructordashboard", "/instructorcalendar"].includes(path)) {
+            navigate("/instructordashboard", { replace: true });
+        }
+        return;
+    }
+
+    // Admin logic
+    if (role === "admin" && path !== "/adminpanel") {
         navigate("/adminpanel", { replace: true });
     }
 }

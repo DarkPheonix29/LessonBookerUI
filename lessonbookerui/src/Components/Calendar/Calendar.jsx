@@ -52,6 +52,7 @@ export default function DrivingSchoolCalendar({
     // Modal state for instructor availability
     const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
     const [availabilityStart, setAvailabilityStart] = useState(null);
+    const [availabilityEnd, setAvailabilityEnd] = useState(null);
 
     // Modal state for student booking
     const [showBookingModal, setShowBookingModal] = useState(false);
@@ -462,21 +463,14 @@ export default function DrivingSchoolCalendar({
                             border: "1px solid #6ce5ff",
                             background: "#fff"
                         }}
+                        value={availabilityEnd ? `${availabilityEnd.getHours().toString().padStart(2, "0")}:${availabilityEnd.getMinutes() === 0 ? "00" : "30"}` : ""}
                         onChange={e => {
                             if (!availabilityStart) return;
                             const [h, m] = e.target.value.split(":");
                             const end = new Date(availabilityStart);
                             end.setHours(Number(h), Number(m), 0, 0);
-                            if (end > availabilityStart) {
-                                addNewAvailability(availabilityStart, end);
-                                setShowAvailabilityModal(false);
-                                setAvailabilityStart(null);
-                                setRepeatUntil(null); // Reset repeat
-                            } else {
-                                alert("End time must be after start time.");
-                            }
+                            setAvailabilityEnd(end);
                         }}
-                        defaultValue=""
                     >
                         <option value="" disabled>
                             --:--
@@ -510,8 +504,8 @@ export default function DrivingSchoolCalendar({
                         })()}
                     </select>
                 </label>
-                <div style={{ marginTop: 12 }}>
-                    <label style={{ color: "#111", marginRight: 8 }}>
+                <div style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    <label style={{ color: "#111", marginRight: 8, marginBottom: 0, whiteSpace: "nowrap" }}>
                         Repeat daily until:
                     </label>
                     <DatePicker
@@ -521,19 +515,40 @@ export default function DrivingSchoolCalendar({
                         placeholderText="No repeat"
                         dateFormat="yyyy-MM-dd"
                         isClearable
+                        popperPlacement="bottom"
+                        wrapperClassName="repeat-datepicker-wrapper"
                     />
                 </div>
-                <button
-                    className="view-button"
-                    style={{ marginTop: 12, color: "#00cfff" }}
-                    onClick={() => {
-                        setShowAvailabilityModal(false);
-                        setAvailabilityStart(null);
-                        setRepeatUntil(null);
-                    }}
-                >
-                    Cancel
-                </button>
+                <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 24 }}>
+                    <button
+                        className="view-button"
+                        style={{ color: "#00cfff" }}
+                        onClick={() => {
+                            setShowAvailabilityModal(false);
+                            setAvailabilityStart(null);
+                            setAvailabilityEnd(null);
+                            setRepeatUntil(null);
+                        }}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        className="view-button"
+                        style={{ color: "#0077a6" }}
+                        disabled={!availabilityStart || !availabilityEnd || availabilityEnd <= availabilityStart}
+                        onClick={() => {
+                            if (availabilityStart && availabilityEnd && availabilityEnd > availabilityStart) {
+                                addNewAvailability(availabilityStart, availabilityEnd);
+                                setShowAvailabilityModal(false);
+                                setAvailabilityStart(null);
+                                setAvailabilityEnd(null);
+                                setRepeatUntil(null);
+                            }
+                        }}
+                    >
+                        Save
+                    </button>
+                </div>
             </div>
         </div>
     );
