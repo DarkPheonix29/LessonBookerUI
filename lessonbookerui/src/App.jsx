@@ -19,43 +19,50 @@ const ProtectedRoute = ({ user, role, allowedRoles, children }) => {
     return children;
 };
 
+// Add this helper function above AppRoutes
+function handleNavigation({ user, role, profileComplete, loading, location, navigate }) {
+    if (loading) return;
+    const publicPaths = ["/", "/login", "/signup"];
+    if (!user && !publicPaths.includes(location.pathname)) {
+        navigate("/", { replace: true });
+        return;
+    }
+    if (!user) return;
+
+    if (
+        role === "student" &&
+        !profileComplete &&
+        !location.pathname.startsWith("/profilesetup/")
+    ) {
+        navigate(`/profilesetup/${user.email}`, { replace: true });
+    } else if (
+        role === "student" &&
+        profileComplete &&
+        !(
+            location.pathname === "/studentdashboard" ||
+            location.pathname === "/studentcalendar"
+        )
+    ) {
+        navigate("/studentdashboard", { replace: true });
+    } else if (
+        role === "instructor" &&
+        !["/instructordashboard", "/instructorcalendar"].includes(location.pathname)
+    ) {
+        navigate("/instructordashboard", { replace: true });
+    } else if (
+        role === "admin" &&
+        location.pathname !== "/adminpanel"
+    ) {
+        navigate("/adminpanel", { replace: true });
+    }
+}
+
 const AppRoutes = ({ user, role, loading, profileComplete, setProfileComplete }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
-        if (loading) return;
-        const publicPaths = ["/", "/login", "/signup"];
-        if (!user && !publicPaths.includes(location.pathname)) {
-            navigate("/", { replace: true });
-        } else if (user) {
-            if (
-                role === "student" &&
-                !profileComplete &&
-                !location.pathname.startsWith("/profilesetup/")
-            ) {
-                navigate(`/profilesetup/${user.email}`, { replace: true });
-            } else if (
-                role === "student" &&
-                profileComplete &&
-                !(
-                    location.pathname === "/studentdashboard" ||
-                    location.pathname === "/studentcalendar"
-                )
-            ) {
-                navigate("/studentdashboard", { replace: true });
-            } else if (
-                role === "instructor" &&
-                !["/instructordashboard", "/instructorcalendar"].includes(location.pathname)
-            ) {
-                navigate("/instructordashboard", { replace: true });
-            } else if (
-                role === "admin" &&
-                location.pathname !== "/adminpanel"
-            ) {
-                navigate("/adminpanel", { replace: true });
-            }
-        }
+        handleNavigation({ user, role, profileComplete, loading, location, navigate });
     }, [user, role, profileComplete, loading, navigate, location.pathname]);
 
     return (
