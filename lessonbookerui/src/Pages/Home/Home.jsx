@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../Components/Header/Header';
 import './Home.css';
-import API_BASE_URL from "../../Components/API/API";
 
 const Home = () => {
     const navigate = useNavigate();

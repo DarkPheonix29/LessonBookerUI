@@ -13,6 +13,19 @@ const getAuthHeader = () => {
     return idToken ? { Authorization: `Bearer ${idToken}` } : {};
 };
 
+function filterProfileData(profile) {
+    const dangerousKeys = ["__proto__", "constructor", "prototype"];
+    return Object.keys(profile).reduce((acc, key) => {
+        if (!dangerousKeys.includes(key)) {
+            acc[key] = profile[key];
+        }
+        return acc;
+    }, {});
+}
+
+// Define dangerous keys at the top (reuse from filterProfileData)
+const dangerousKeys = ["__proto__", "constructor", "prototype"];
+
 const AdminPanel = () => {
     const [students, setStudents] = useState([]);
     const [bookings, setBookings] = useState([]);
@@ -95,8 +108,9 @@ const AdminPanel = () => {
     const updateProfile = async () => {
         // Merge selectedStudent and profileData, profileData takes precedence
         const fullProfile = { ...selectedStudent, ...profileData };
+        const safeProfile = filterProfileData(fullProfile);
         try {
-            await axios.put(`${API_BASE_URL}/api/admin/update-profile`, fullProfile, {
+            await axios.put(`${API_BASE_URL}/api/admin/update-profile`, safeProfile, {
                 headers: getAuthHeader(),
             });
             setMessage("Profile updated successfully.");
@@ -201,7 +215,8 @@ const AdminPanel = () => {
                                         (key) =>
                                             key !== "uid" && // Don't allow editing uid
                                             key !== "ProfileId" && // Optionally skip ProfileId if you don't want it editable
-                                            typeof selectedStudent[key] !== "object" // Skip nested objects/arrays
+                                            typeof selectedStudent[key] !== "object" && // Skip nested objects/arrays
+                                            !dangerousKeys.includes(key) // Prevent rendering dangerous keys
                                     )
                                     .map((key) => (
                                         <div key={key} style={{ marginBottom: 10 }}>
@@ -212,7 +227,7 @@ const AdminPanel = () => {
                                                 type={key.toLowerCase().includes("email") ? "email" : "text"}
                                                 placeholder={`Update ${key}`}
                                                 value={
-                                                    profileData[key] !== undefined
+                                                    Object.prototype.hasOwnProperty.call(profileData, key)
                                                         ? profileData[key]
                                                         : selectedStudent[key] !== null && selectedStudent[key] !== undefined
                                                             ? selectedStudent[key]

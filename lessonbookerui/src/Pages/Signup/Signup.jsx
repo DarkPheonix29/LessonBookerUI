@@ -9,18 +9,15 @@ import { isProfileComplete } from "../../Components/ProfileCheck";
 
 function getPasswordStrength(password) {
     if (!password) return '';
-    if (password.length < 6) return 'Weak';
-    if (
-        password.length >= 10 &&
-        /[A-Z]/.test(password) &&
-        /[0-9]/.test(password) &&
-        /[^A-Za-z0-9]/.test(password)
-    ) return 'Strong';
-    if (
-        password.length >= 8 &&
-        /[A-Z]/.test(password) &&
-        /[0-9]/.test(password)
-    ) return 'Medium';
+
+    const length = password.length;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+    if (length < 6) return 'Weak';
+    if (length >= 10 && hasUpper && hasNumber && hasSpecial) return 'Strong';
+    if (length >= 8 && hasUpper && hasNumber) return 'Medium';
     return 'Weak';
 }
 
@@ -66,6 +63,47 @@ const Signup = ({ fetchAndSetRole }) => {
         }
     };
 
+    function storeToken(token, idToken) {
+        localStorage.setItem("idToken", token || idToken);
+    }
+
+    function navigateByRole(role, hasProfile, email, navigate) {
+        if (role === "student") {
+            navigate(hasProfile ? "/studentdashboard" : `/profilesetup/${email}`);
+        } else if (role === "instructor") {
+            navigate("/instructordashboard");
+        } else if (role === "admin") {
+            navigate("/adminpanel");
+        } else {
+            navigate("/");
+        }
+    }
+
+    async function signupAndLogin({ email, password, registrationKey }) {
+        // 1. Signup (create user in backend and Firebase Auth)
+        const signupResponse = await axios.post(`${API_BASE_URL}/api/Account/signup`, {
+            email,
+            password,
+            registrationKey
+        });
+
+        if (signupResponse.status !== 200) {
+            throw new Error('Signup failed');
+        }
+
+        // 2. Sign in with Firebase Auth to get the ID token
+        const auth = getAuth();
+        await signInWithEmailAndPassword(auth, email, password);
+        const idToken = await auth.currentUser.getIdToken();
+
+        // 3. Send ID token to backend to get JWT/session
+        const loginResponse = await axios.post(`${API_BASE_URL}/api/account/login`, {
+            idToken
+        });
+
+        return { loginData: loginResponse.data, idToken };
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMessage('');
@@ -78,54 +116,17 @@ const Signup = ({ fetchAndSetRole }) => {
             return;
         }
         try {
-            // 1. Signup (create user in backend and Firebase Auth)
-            const signupResponse = await axios.post(`${API_BASE_URL}/api/Account/signup`, {
-                email,
-                password,
-                registrationKey
-            });
+            const { loginData, idToken } = await signupAndLogin({ email, password, registrationKey });
+            storeToken(loginData?.token, idToken);
 
-            if (signupResponse.status === 200) {
-                // 2. Sign in with Firebase Auth to get the ID token
-                const auth = getAuth();
-                await signInWithEmailAndPassword(auth, email, password);
-                const idToken = await auth.currentUser.getIdToken();
-
-                // 3. Send ID token to backend to get JWT/session
-                const loginResponse = await axios.post(`${API_BASE_URL}/api/account/login`, {
-                    idToken
-                });
-
-                // 4. Store JWT (or use idToken if backend doesn't return a new one)
-                if (loginResponse.data && loginResponse.data.token) {
-                    localStorage.setItem("idToken", loginResponse.data.token);
-                } else {
-                    localStorage.setItem("idToken", idToken);
-                }
-
-                // 5. Fetch and set role
-                if (fetchAndSetRole) {
-                    await fetchAndSetRole();
-                }
-
-                // 6. Check for profile and redirect accordingly
-                const hasProfile = await isProfileComplete(email);
-                if (loginResponse.data.role === "student") {
-                    if (hasProfile) {
-                        navigate("/studentdashboard");
-                    } else {
-                        navigate(`/profilesetup/${email}`);
-                    }
-                } else if (loginResponse.data.role === "instructor") {
-                    navigate("/instructordashboard");
-                } else if (loginResponse.data.role === "admin") {
-                    navigate("/adminpanel");
-                } else {
-                    navigate("/");
-                }
+            if (fetchAndSetRole) {
+                await fetchAndSetRole();
             }
+
+            const hasProfile = await isProfileComplete(email);
+            navigateByRole(loginData.role, hasProfile, email, navigate);
         } catch (error) {
-            setErrorMessage(error.response?.data?.message || 'Signup failed. Please try again.');
+            setErrorMessage(error.response?.data?.message || error.message || 'Signup failed. Please try again.');
         }
     };
 
@@ -184,11 +185,6 @@ const Signup = ({ fetchAndSetRole }) => {
                             required
                         />
                     </div>
-                    {passwordError && (
-                        <div className="error" style={{ fontWeight: "bold", color: "#d32f2f", marginBottom: 8 }}>
-                            {passwordError}
-                        </div>
-                    )}
                     {errorMessage && <p className="error">{errorMessage}</p>}
                     <button
                         type="submit"

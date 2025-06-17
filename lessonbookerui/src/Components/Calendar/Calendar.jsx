@@ -16,8 +16,9 @@ import {
     isToday,
     isSameDay,
     isSameDay as isSameDayDateFns,
-    startOfDay // <-- Add this line
 } from "date-fns";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import "./Calendar.css";
 import API_BASE_URL from "../../Components/API/API";
 
@@ -28,6 +29,9 @@ const getAuthHeader = () => {
     const idToken = localStorage.getItem("idToken");
     return idToken ? { Authorization: `Bearer ${idToken}` } : {};
 };
+
+// Add this helper at the top (or reuse if already present)
+const dangerousKeys = ["__proto__", "constructor", "prototype"];
 
 export default function DrivingSchoolCalendar({
     isInstructor = true,
@@ -40,7 +44,6 @@ export default function DrivingSchoolCalendar({
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [availability, setAvailability] = useState([]);
     const [bookings, setBookings] = useState([]);
-    const [bookingDuration, setBookingDuration] = useState(1);
     const [repeatUntil, setRepeatUntil] = useState(null);
     const [studentProfiles, setStudentProfiles] = useState({});
     const [instructors, setInstructors] = useState([]);
@@ -60,7 +63,6 @@ export default function DrivingSchoolCalendar({
     const [profileLoading, setProfileLoading] = useState(false);
     const [profileError, setProfileError] = useState(null);
 
-    const currentHourRef = useRef(null);
     const currentHour = new Date().getHours();
 
     // --- SignalR connection and calendar data fetching ---
@@ -165,7 +167,7 @@ export default function DrivingSchoolCalendar({
         // Find all unique student emails in bookings
         const emails = Array.from(new Set(bookings.map(b => b.studentEmail)));
         // Filter out emails we already have
-        const missing = emails.filter(email => !studentProfiles[email]);
+        const missing = emails.filter(email => !Object.prototype.hasOwnProperty.call(studentProfiles, email));
         if (missing.length === 0) return;
 
         // Fetch all missing profiles in parallel
@@ -179,7 +181,9 @@ export default function DrivingSchoolCalendar({
             setStudentProfiles(prev => {
                 const updated = { ...prev };
                 results.forEach(({ email, displayName }) => {
-                    updated[email] = displayName;
+                    if (!dangerousKeys.includes(email)) {
+                        updated[email] = displayName;
+                    }
                 });
                 return updated;
             });
@@ -187,6 +191,25 @@ export default function DrivingSchoolCalendar({
     }, [bookings]);
 
     const addNewAvailability = (start, end) => {
+        // If repeatUntil is not set or before start, just add one slot
+        if (!repeatUntil || repeatUntil <= start) {
+            postAvailabilitySlot(start, end);
+            return;
+        }
+
+        // Add slots for each day until repeatUntil (inclusive)
+        let current = new Date(start);
+        let currentEnd = new Date(end);
+        while (current <= repeatUntil) {
+            postAvailabilitySlot(new Date(current), new Date(currentEnd));
+            // Move to next day
+            current.setDate(current.getDate() + 1);
+            currentEnd.setDate(currentEnd.getDate() + 1);
+        }
+    };
+
+    // Helper to post a single slot
+    const postAvailabilitySlot = (start, end) => {
         const newAvailability = {
             instructorEmail,
             start: start.toISOString(),
@@ -440,6 +463,7 @@ export default function DrivingSchoolCalendar({
                                 addNewAvailability(availabilityStart, end);
                                 setShowAvailabilityModal(false);
                                 setAvailabilityStart(null);
+                                setRepeatUntil(null); // Reset repeat
                             } else {
                                 alert("End time must be after start time.");
                             }
@@ -478,12 +502,26 @@ export default function DrivingSchoolCalendar({
                         })()}
                     </select>
                 </label>
+                <div style={{ marginTop: 12 }}>
+                    <label style={{ color: "#111", marginRight: 8 }}>
+                        Repeat daily until:
+                    </label>
+                    <DatePicker
+                        selected={repeatUntil}
+                        onChange={date => setRepeatUntil(date)}
+                        minDate={availabilityStart}
+                        placeholderText="No repeat"
+                        dateFormat="yyyy-MM-dd"
+                        isClearable
+                    />
+                </div>
                 <button
                     className="view-button"
                     style={{ marginTop: 12, color: "#00cfff" }}
                     onClick={() => {
                         setShowAvailabilityModal(false);
                         setAvailabilityStart(null);
+                        setRepeatUntil(null);
                     }}
                 >
                     Cancel

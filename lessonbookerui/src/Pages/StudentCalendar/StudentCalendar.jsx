@@ -19,7 +19,7 @@ const StudentCalendar = () => {
     const user = auth.currentUser;
     const userEmail = user?.email || "Student";
     const [displayName, setDisplayName] = useState("Student");
-    const [nextLesson, setNextLesson] = useState(null);
+    const [setNextLesson] = useState(null);
 
     useEffect(() => {
         if (userEmail) {
